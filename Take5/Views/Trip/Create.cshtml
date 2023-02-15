@@ -1,0 +1,320 @@
+﻿@model Take5.Services.Models.MasterModels.TripModel
+
+@{ ViewData["Title"] = "Create"; }
+<link href="~/css/leaflet.css" rel="stylesheet" />
+<link href="~/css/site.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+
+<style>
+
+    .marker-pin {
+        width: 30px;
+        height: 30px;
+        border-radius: 50% 50% 50% 0;
+        background: #c30b82;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 50%;
+        top: 50%;
+        margin: -15px 0 0 -15px;
+    }
+
+        .marker-pin::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            margin: 3px 0 0 3px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+
+    .custom-div-icon i {
+        position: absolute;
+        width: 22px;
+        font-size: 22px;
+        left: 0;
+        right: 0;
+        margin: 10px auto;
+        text-align: center;
+    }
+
+        .custom-div-icon i.awesome {
+            margin: 12px auto;
+            font-size: 17px;
+        }
+</style>
+
+
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal(message, {
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal(error, {
+                icon: "success",
+            });
+        }
+
+
+    }
+</script>
+@*<script>
+        showAlert("Message");
+    </script>*@
+@if (TempData["Message"] != null)
+{
+<input type="hidden" id="message" value="@TempData["Message"]" />
+                <script>
+                    showAlert("Message");
+                </script> 
+                }
+                            else if (TempData["Error"] != null)
+                            {
+                <input type="hidden" id="error" value="@TempData["Error"]" />
+                                <script>
+                                    showAlert("Error");
+                                </script>}
+
+
+<h4>Add New Trip</h4>
+
+<hr />
+@if (Model != null)
+{
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title"></h4>
+    </div>
+    <div class="card-body">
+        <div class="basic-form">
+            <form asp-action="Create">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="Id" class="control-label">Trip Number </label>
+                        <input asp-for="Id" id="TripId" class="form-control" placeholder="TripNumber" />
+                        <span asp-validation-for="Id" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="TripDate" class="control-label">Date</label>
+                        @*<input asp-for="TripDate" class="form-control" />
+                            <span asp-validation-for="TripDate" class="text-danger"></span>*@
+
+
+                        <div class="input-group date" id="reservationdatetime" data-target-input="nearest">
+                            <input type="text" class="form-control datetimepicker-input" asp-for="TripDate" id="TripDate" />
+                            <div class="input-group-append" data-target="#reservationdatetime" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="DriverId" class="control-label">Driver</label>
+                        <select asp-for="DriverId" id="DriverId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Drivers, "Id", "FullName"))">
+                            <option value="-1" selected disabled>Select Driver</option>
+                        </select>
+                        <span asp-validation-for="DriverId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="TruckId" class="control-label">Truck</label>
+                        <select asp-for="TruckId" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "Id", "Id"))">
+                            <option value="-1" selected disabled>Select Truck</option>
+
+                        </select>
+                        <span asp-validation-for="TruckId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="JobSiteId" class="control-label">JobSite</label>
+                        <select asp-for="JobSiteId" id="JobSiteSelectedId" class="form-control select2bs4" asp-items="@(new SelectList(Model.JobSites, "Id", "Name"))">
+                            <option value="-1" selected disabled>Select Jobsite</option>
+
+                        </select>
+                        <span asp-validation-for="JobSiteId" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+                <div class="col-md-12" style="margin-top:20px">
+                    <div id="map">
+
+                    </div>
+                </div>
+
+                                <div>
+                                    <a asp-action="Index">Back to List</a>
+                                </div>
+
+                                                <script src="~/js/JQuery/jquery-3.5.1.js"></script>
+                                                                <script src="~/js/leaflet.js"></script>
+                                                                                <script type="text/javascript">
+    $(document).ready(function () {
+        //let customIcon = {
+        //    iconUrl: "/images/marker-icon.jpg",
+        //        iconSize: [20, 20]
+        //}
+        //let myIcon = L.icon(customIcon);
+        //let iconOptions = {
+        //    title: "company name",
+        //    draggable: false,
+        //    icon: myIcon
+        //}
+        let mapOptions = {
+            center: [27.1879, 31.0387],
+            zoom: 12,
+        }
+
+
+        let map = new L.map('map', mapOptions);
+
+        let layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        map.addLayer(layer);
+        var myicon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div style='background-color:#4838cc;' class='marker-pin'></div><i class='fa-solid fa-car'",
+            iconSize: [30, 42],
+            iconAnchor: [15, 42]
+        });
+        let marker = new L.Marker([27.1879, 31.0387], { icon: myicon });
+        marker.addTo(map);
+
+        $('#JobSiteSelectedId').change(function () {
+            var ddlsource = "#JobSiteSelectedId";
+            var subItems = '';
+            if ($(ddlsource).val() != -1) {
+                var url = '@Url.Content("~/")' + "Take5/JobSite/GetDetails";
+                $.getJSON(url, { id: $(ddlsource).val() }, function (data) {
+
+                    var popup = '<b>Name:</b> ' + data['Name'] +
+                        '<br/><b>Latitude:</b> ' + data['Latitude'] +
+                        '<br/><b>Longitude:</b> ' + data['Longitude'] +
+                        '<br/><b> Desc:</b> ' + data['Desc']
+                        + '<br/><b> Has Network:</b> ' + data['HasNetworkCoverage'];
+                    var lat = parseFloat(data['Latitude']);
+                    var long = parseFloat(data['Longitude']);
+                    let marker2 = new L.Marker([lat, long], { icon: myicon }).bindPopup(popup);
+                    marker2.addTo(map);
+                    map.flyTo([lat, long]);
+
+                });
+            }
+            else {
+                alert('no data');
+            }
+        });
+
+        $('#DriverId').change(function () {
+            var ddlsource = "#DriverId";
+            var tripDate = "#TripDate";
+            if ($(ddlsource).val != -1) {
+                var url = '@Url.Content("~/")' + "Take5/Trip/IsDriverAvaliable";
+                $.getJSON(url, { id: $(ddlsource).val() }, function (data) {
+                    if (data != 0) {
+                        alert("Selected Driver has uncompleted trip number #" + data);
+                        //$('#DriverId').val('-1').change();
+                        $("#DriverId").prop("selectedIndex", -1);
+
+                    }
+                });
+            }
+
+        });
+
+         $('#TruckId').change(function () {
+                var ddlsource = "#TruckId";
+                if ($(ddlsource).val != -1) {
+                    var url = '@Url.Content("~/")' + "Take5/Trip/IsTruckAvaliable";
+                    $.getJSON(url, { truckId: $(ddlsource).val() }, function (data) {
+                        if (data != 0) {
+                            alert("Selected Truck has uncompleted trip number #" + data);
+                            //$('#DriverId').val('-1').change();
+                            $("#TruckId").prop("selectedIndex", -1);
+                        }
+                    });
+                }
+
+                });
+
+          $('#TripId').change(function () {
+              var ddlsource = "#TripId";
+              var url = '@Url.Content("~/")' + "Take5/Trip/CheckTripNumberIdentity";
+                    $.getJSON(url, { tripId: $(ddlsource).val() }, function (data) {
+                        if (data == false) {
+                            alert("invalid Trip Number, there is a trip with the same number");
+                            //$('#DriverId').val('-1').change();
+                            $("#TripId").prop("value", 0);
+                        }
+                    });
+
+            });
+
+
+
+    });
+
+                                                                                </script>
+                                                                                                <script>
+                                                                                                    $(function () {
+                                                                                                        //Initialize Select2 Elements
+
+                                                                                                        //Datemask dd/mm/yyyy
+                                                                                                        $('#datemask').inputmask('dd/mm/yyyy', { 'placeholder': 'dd/mm/yyyy' })
+                                                                                                        //Datemask2 mm/dd/yyyy
+                                                                                                        $('#datemask2').inputmask('mm/dd/yyyy', { 'placeholder': 'mm/dd/yyyy' })
+                                                                                                        //Money Euro
+                                                                                                        $('[data-mask]').inputmask()
+
+                                                                                                        //Date picker
+                                                                                                        $('#reservationdate').datetimepicker({
+                                                                                                            format: 'L'
+                                                                                                        });
+
+                                                                                                        //Date and time picker
+                                                                                                        $('#reservationdatetime').datetimepicker({ icons: { time: 'far fa-clock' } });
+
+                                                                                                        //Date range picker
+                                                                                                        $('#reservation').daterangepicker()
+                                                                                                        //Date range picker with time picker
+                                                                                                        $('#reservationtime').daterangepicker({
+                                                                                                            timePicker: true,
+                                                                                                            timePickerIncrement: 30,
+                                                                                                            locale: {
+                                                                                                                format: 'MM/DD/YYYY hh:mm A'
+                                                                                                            }
+                                                                                                        })
+
+                                                                                                        //Timepicker
+                                                                                                        $('#timepicker').datetimepicker({
+                                                                                                            format: 'LT'
+                                                                                                        })
+
+
+                                                                                                    });
+
+                                                                                                    $(function () {
+                                                                                                        //Initialize Select2 Elements
+                                                                                                        $('.select2').select2()
+
+                                                                                                        //Initialize Select2 Elements
+                                                                                                        $('.select2bs4').select2({
+                                                                                                            theme: 'bootstrap4'
+                                                                                                        })
+                                                                                                    });
+                                                                                                </script>
+}

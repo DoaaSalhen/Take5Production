@@ -1,0 +1,138 @@
+﻿@model IEnumerable<Take5.Services.Models.MasterModels.OfflineTripsModel>
+
+@{
+    ViewData["Title"] = "ShowOfflineTrips";
+}
+
+<h1>ShowOfflineTrips</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+@if (Model != null)
+{
+    <table id="example1" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>
+                    TripId
+                </th>
+                <th>
+                    JobSiteId
+                </th>
+                <th>
+                   StartingDate
+                </th>
+                <th>
+                    DestinationArrivingDate
+                </th>
+                <th>
+                    StageOneComplatedTime
+                </th>
+                <th>
+                    StageTwoRequestDate
+                </th>
+                <th>
+                    StageTwoRequestCreatedDate
+                </th>
+                <th>
+                    StageTwoResponseDate
+                </th>
+                <th>
+                    RequestStatus
+                </th>
+                <th>
+                    RequestResponsedBy
+                </th>
+                <th>
+                    StageTwoComplatedTime
+                </th>
+                <th>
+                   Take5Status
+                </th>
+                <th>
+                    TripStatus
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @*@if (Model.Count() > 0)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TripId)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.JobSiteId)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StartingDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DestinationArrivingDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StageOneComplatedTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StageTwoRequestDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StageTwoRequestCreatedDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StageTwoResponseDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RequestStatus)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.RequestResponsedBy)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StageTwoComplatedTime)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Take5Status)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TripStatus)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        </td>
+                    </tr>
+                }
+
+            }*@
+        </tbody>
+    </table>
+}
+else
+{
+    <h1>Zero offline trips</h1>
+}
+
+@*<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>*@
+@*<script>
+                    $(function () {
+                        $("#example1").DataTable({
+                            "responsive": true, "lengthChange": false, "autoWidth": false,
+                            "buttons": ["excel", "pdf", "print", "colvis"]
+                        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+                        $('#example2').DataTable({
+                            "paging": true,
+                            "lengthChange": false,
+                            "searching": false,
+                            "ordering": true,
+                            "info": true,
+                            "autoWidth": false,
+                            "responsive": true,
+                        });
+                    });
+</script>*@

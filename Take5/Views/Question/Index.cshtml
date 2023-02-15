@@ -1,0 +1,275 @@
+﻿@model IEnumerable<Take5.Services.Models.MasterModels.QuestionModel>
+
+@{ ViewData["Title"] = "Index"; }
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal(message, {
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal(error, {
+                icon: "success",
+            });
+        }
+
+
+    }
+</script>
+
+@if (TempData["Message"] != null)
+{
+<input type="hidden" id="message" value="@TempData["Message"]" />
+                <script>
+                    showAlert("Message");
+                </script> }
+                            else if (TempData["Error"] != null)
+                            {
+                <input type="hidden" id="error" value="@TempData["Error"]" />
+                                <script>
+                                    showAlert("Error");
+                                </script>}
+<div style="direction:rtl !important">
+
+    <p>
+        <a asp-action="Create">ِAdd Question</a>
+    </p>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header"> <h1>Questions</h1></div>
+                <div class="card-body">
+                    @if (Model != null)
+                    {
+        <table id="example1" class="table table-bordered table-hover text-center">
+            <thead>
+                <tr>
+                    <th>
+                        Number
+                    </th>
+                    <th>
+                        Text
+                    </th>
+                    <th>
+                        Step
+                    </th>
+                    <th>
+                        Active
+                    </th>
+                    <th>
+                        Created Date
+                    </th>
+                    <th>
+                        Updated Date
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+<tr id="@item.Id">
+    <td>
+        <span id="Id+@item.Id">@item.Id</span>
+    </td>
+    <td>
+        <span id="text+@item.Id">@item.Text</span>
+    </td>
+    <td>
+        <span id="step+@item.Id">@item.Step</span>
+    </td>
+    <td>
+        <span id="IsVisible+@item.Id">@item.IsVisible</span>
+    </td>
+    <td>
+        <span>@item.CreatedDate</span>
+    </td>
+    <td>
+        <span id="UpdatedDate+@item.Id">@item.UpdatedDate</span>
+    </td>
+    <td class="btn-group btn-group-sm">
+        <button class="btn btn-info" onclick="ShowEditPopup(@JsonSerializer.Serialize(item))">
+            <i class="fas fa-pen">
+            </i>
+        </button>
+        <button class="btn btn-danger" onclick="DeleteQuestion(@item.Id)">
+            <i class="fas fa-trash">
+            </i>
+        </button>
+    </td>
+</tr>}
+            </tbody>
+        </table> }
+                    else
+                    {
+        <h3>There is no Questions</h3>}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="modal fade" id="questionModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestModalLabel">Edit Question</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearElements()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col col-lg-12 mb-2 mb-lg-0">
+                        <div class="card mb-1" style="border-radius: .5rem; padding:10px">
+                            <div class="card-body p-1">
+                                <div class="row pt-1">
+                                    <div class="col-md-3 mb-1">
+                                        <label class="control-label model-label">Question</label>
+                                    </div>
+                                    <div class="col-md-9 mb-1">
+                                        <input type="hidden" class="text-muted" id="QuestionId" />
+                                        <textarea class="text-muted" id="QuestionTextId" style="width:300px; height:75px"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row pt-1">
+                                    <div class="col-md-3 mb-1">
+                                        <label class="control-label model-label">Step</label>
+                                    </div>
+                                    <div class="col-md-9 mb-1">
+                                        <select type="checkbox" id="QuestionStep">
+                                            <option value="1">One</option>
+                                            <option value="2">Two</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row pt-1">
+                                    <div class="col-lg-3 mb-1">
+                                        <label class="control-label model-label">Active</label>
+                                    </div>
+                                    <div class="col-lg-9 mb-1">
+                                        <input type="checkbox" id="QuestionIsVisiable" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="UpdateQuestion()">Update</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="clearElements()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+@*<script>
+        $(function () {
+            $("#example1").DataTable({
+                "responsive": true, "lengthChange": false, "autoWidth": false
+            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+            $('#example2').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": false,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+            });
+        });
+    </script>*@
+<script>
+        function ShowEditPopup(question)
+        {
+            document.getElementById("QuestionId").value = question["Id"];
+            document.getElementById("QuestionTextId").value = question["Text"];
+            document.getElementById("QuestionStep").value = question["Step"];
+            if (question["IsVisible"] == true) {
+                document.getElementById("QuestionIsVisiable").checked = 'checked';
+                document.getElementById("QuestionIsVisiable").value = true;
+            }
+            else
+            {
+                document.getElementById("QuestionIsVisiable").value = false;
+            }
+            $('#questionModal').modal('show');
+        }
+        function UpdateQuestion()
+        {
+            var question =
+            {
+                Id: document.getElementById("QuestionId").value,
+                Text: document.getElementById("QuestionTextId").value,
+                IsVisible: document.getElementById("QuestionIsVisiable").value,
+                Step: document.getElementById("QuestionStep").value,
+
+            }
+            $.ajax({
+                url: '@Url.Content("~/")' + "Take5/Question/Edit",
+                data: question,
+                type: "POST",
+                async: false,
+                success: function (data)
+                {
+                    swal("Success Process! Question has been updated!", {
+                        icon: "success",
+                    });
+                    document.getElementById("text+" + question["Id"]).innerText = question["Text"];
+                    document.getElementById("step+" + question["Id"]).innerText = question["Step"];
+                    var currentdate = new Date().toLocaleString();
+                    document.getElementById("UpdatedDate+" + question["Id"]).innerText = currentdate;
+                    $('#questionModal').modal('toggle');
+
+                },
+                error: function () {
+                    swal("Failed process, Problem in  Question update", {
+                        icon: "error",
+                    });
+                    $('#questionModal').modal('toggle');
+                }
+            });
+        }
+
+    function DeleteQuestion(questionId)
+    {
+        swal({
+            title: "Are you sure?",
+            text: "Are you sure to delete this question!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+                if (willDelete)
+                {
+                    var url = '@Url.Content("~/")' + "Question/Delete";
+                    $.getJSON(url, { id: questionId }, function (data) {
+                        if (data == true) {
+                            var tr = document.getElementById(questionId);
+                            document.getElementById(questionId).style.display = 'none';
+                            swal("Success Process! question has been deleted!", {
+                                icon: "success",
+                            });
+                        }
+                        else
+                        {
+                            swal("Failed Process, question can not be deleted!", {
+                                icon: "Error",
+                            });
+                        }
+                    });
+                }
+
+            });
+
+    }
+
+</script>

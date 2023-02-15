@@ -1,0 +1,273 @@
+﻿@model Take5.Services.Models.MasterModels.TripJobsiteModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+@*<h1>Details</h1>
+
+    <div>
+        <h4>JobSiteModel</h4>
+        <hr />
+        <dl class="row">
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.Id)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.Id)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.IsDelted)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.IsDelted)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.IsVisible)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.IsVisible)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.CreatedDate)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.CreatedDate)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.UpdatedDate)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.UpdatedDate)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.Name)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.Latitude)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.Latitude)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.Longitude)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.Longitude)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.Desc)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.Desc)
+            </dd>
+            <dt class = "col-sm-2">
+                @Html.DisplayNameFor(model => model.HasNetworkCoverage)
+            </dt>
+            <dd class = "col-sm-10">
+                @Html.DisplayFor(model => model.HasNetworkCoverage)
+            </dd>
+        </dl>
+    </div>
+    <div>
+        @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+        <a asp-action="Index">Back to List</a>
+    </div>*@
+
+<div class="card card-default">
+    <div class="card-header">
+        <h3 class="card-title">Trip Details</h3>
+
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>TripNumber</label>
+                    <label class="form-control">@Model.TripId</label>
+                </div>
+                <!-- /.form-group -->
+                <div class="form-group">
+                    <label>Jobsite Number</label>
+                    <label class="form-control">@Model.JobSiteId</label>
+                </div>
+                <!-- /.form-group -->
+            </div>
+            <!-- /.col -->
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Trip Status</label>
+                    <label class="form-control">@Model.TripStatusText</label>
+                </div>
+                <!-- /.form-group -->
+                <div class="form-group">
+                    <label>Jobsite Name</label>
+                    <label class="form-control">@Model.JobSite.Name</label>
+                </div>
+                <!-- /.form-group -->
+            </div>
+            <!-- /.col -->
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-sm-6">
+                <div class="form-group">
+                    <label>Driver Number</label>
+                    <label class="form-control">@Model.Trip.DriverId</label>
+                </div>
+                <!-- /.form-group -->
+            </div>
+            <!-- /.col -->
+            <div class="col-12 col-sm-6">
+                <div class="form-group">
+                    <label>Driver Number</label>
+                    <label class="form-control">@Model.Trip.Driver.FullName</label>
+                </div>
+            </div>
+            <!-- /.form-group -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+</div>
+
+<h5>Trip TimeLine</h5>
+
+<div class="card">
+    <div class="card-body">
+        <div class="tab-pane" id="timeline">
+            <!-- The timeline -->
+            <div class="timeline timeline-inverse">
+                <!-- timeline time label -->
+                <div class="time-label">
+                    <span class="bg-danger">
+                        Trip Number @Model.TripId
+                    </span>
+                </div>
+                <!-- /.timeline-label -->
+                <!-- timeline item -->
+                <div>
+                    <i class="fas fa-envelope bg-primary"></i>
+                    <div class="timeline-item">
+                        <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                        <h3 class="timeline-header">Assign</h3>
+
+                        <div class="timeline-body">
+                            @Model.TripDateText
+                        </div>
+                    </div>
+                </div>
+                @if (Model.StartingDate != null)
+                {
+                    <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                            <h3 class="timeline-header">Starting</h3>
+
+                            <div class="timeline-body">
+                                @Model.StartingDateText
+                            </div>
+                        </div>
+                    </div>
+
+                }
+                @if (Model.DestinationArrivingDate != null)
+                {
+                    <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                            <h3 class="timeline-header">Destination Arrival</h3>
+
+                            <div class="timeline-body">
+                                @Model.DestinationArrivingDateText
+                            </div>
+                        </div>
+                    </div>
+
+                }
+                @if (Model.StageOneComplatedTime != null)
+                {
+                    <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                            <h3 class="timeline-header">Step One Completion</h3>
+
+                            <div class="timeline-body">
+                                @Model.StageOneComplatedTimeText
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.StageTwoRequestDate != null)
+                {
+                    <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                            <h3 class="timeline-header">Step Two Request</h3>
+
+                            <div class="timeline-body">
+                                @Model.StageTwoRequestDateText
+                            </div>
+                        </div>
+                    </div>
+
+                }
+                @if (Model.StageTwoResponseDate != null)
+                {
+                    <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                            <h3 class="timeline-header">Step Two Response</h3>
+
+                            <div class="timeline-body">
+                                @Model.StageTwoResponseDateText
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.StageTwoComplatedTime != null)
+                {
+                    <div>
+                        <i class="fas fa-envelope bg-primary"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i> 12:05</span>
+
+                            <h3 class="timeline-header">Step Two Completion</h3>
+
+                            <div class="timeline-body">
+                                @Model.StageTwoComplatedTimeText
+                            </div>
+                        </div>
+                    </div>
+
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

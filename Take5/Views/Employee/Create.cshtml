@@ -1,0 +1,127 @@
+﻿@model Take5.Services.Models.MasterModels.EmployeeModel
+
+@{ ViewData["Title"] = "Create"; }
+<style>
+    .table,
+    .form-group {
+        color: black !important
+    }
+</style>
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal(message, {
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal(error, {
+                icon: "success",
+            });
+        }
+
+
+    }
+</script>
+@if (TempData["Message"] != null)
+{
+    <input type="hidden" id="message" value="@TempData["Message"]" />
+    <script>
+                    showAlert("Message");
+    </script>
+}
+else if (TempData["Error"] != null)
+{
+    <input type="hidden" id="error" value="@TempData["Error"]" />
+    <script>
+                                    showAlert("Error");
+    </script>
+}
+
+<h4>Add New Employee</h4>
+
+<hr />
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title"></h4>
+    </div>
+    <div class="card-body">
+        <div class="basic-form">
+            <form asp-action="Create">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="EmployeeNumber" class="control-label">Employee Number <span class="text-danger">*</span></label>
+                        <input asp-for="EmployeeNumber" class="form-control" placeholder="Employee Number" />
+                        <span asp-validation-for="EmployeeNumber" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="EmployeeName" class="control-label">FullName <span class="text-danger">*</span></label>
+                        <input asp-for="EmployeeName" class="form-control" placeholder="Full Name" />
+                        <span asp-validation-for="EmployeeName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label asp-for="PhoneNumber" class="control-label">Phone Number <span class="text-danger">*</span></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="PhoneNumber" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label asp-for="Email" class="control-label">Email <span class="text-danger">*</span></label>
+                        <input asp-for="Email" class="form-control" placeholder="Email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Password" class="control-label">Password <span class="text-danger">*</span></label>
+                        <input asp-for="Password" class="form-control" placeholder="Password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="ConfirmPassword" class="control-label">Confirm Password <span class="text-danger">*</span></label>
+                        <input asp-for="ConfirmPassword" class="form-control" placeholder="ConfirmPassword" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+                <h4>Select user role</h4>
+                <div class="form-row">
+                    @if (Model.roles != null)
+                    {
+        <table class="table table-responsive-sm col-lg-6">
+            <tr>
+                <th></th>
+                <th></th>
+            </tr>
+            @for (int index = 0; index < Model.roles.Count; index++)
+            {
+<tr>
+    <td>
+        @Model.roles[index].Name
+    </td>
+    <td>
+        <input type="radio" asp-for="@Model.roleName" value="@Model.roles[index].Name" />
+    </td>
+</tr>}
+        </table>}
+
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

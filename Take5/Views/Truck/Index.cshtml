@@ -1,0 +1,94 @@
+﻿@model IEnumerable<Take5.Services.Models.MasterModels.TruckModel>
+
+@{ ViewData["Title"] = "Index"; }
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+<script>function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal(message, {
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal(error, {
+                icon: "success",
+            });
+        }
+
+
+    }</script>
+
+@if (TempData["Message"] != null)
+{
+<input type="hidden" id="message" value="@TempData["Message"]" />
+                <script>showAlert("Message");</script>
+ }
+            else if (TempData["Error"] != null)
+            {
+<input type="hidden" id="error" value="@TempData["Error"]" />
+                <script>showAlert("Error");</script>
+}
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header"><h4>Trucks</h4></div>
+            <div class="card-body">
+                @if (Model != null)
+                {
+    <div class="table-responsive">
+
+        <table id="example1" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Id)
+                    </th>
+
+                    <th>
+                        Active
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.CreatedDate)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.UpdatedDate)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Id)
+    </td>
+
+    <td>
+        @Html.DisplayFor(modelItem => item.IsVisible)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.CreatedDate)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.UpdatedDate)
+    </td>
+    <td>
+        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+    </td>
+</tr>
+}
+            </tbody>
+        </table>
+    </div>}
+            </div>
+        </div>
+    </div>
+</div>

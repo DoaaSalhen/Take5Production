@@ -1,0 +1,1155 @@
+﻿@model Take5.Services.Models.SpecificModels.HomeModel
+@inject UserManager<AspNetUser> userManager
+
+
+@{
+    ViewData["Title"] = "Home Page";
+    string approveButtonId = "";
+    var user = await userManager.GetUserAsync(User);
+}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Dashboard</h1>
+            </div><!-- /.col -->
+            @*<div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#"> Home </a></li>
+                    <li class="breadcrumb-item active">Dashboard v1</li>
+                </ol>
+            </div>*@<!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<h3>
+    Trips summary
+</h3>
+<style>
+    table {
+        color: black;
+    }
+
+    h3 {
+        margin: 15px 0px 15px 0px;
+    }
+
+    span {
+        cursor: pointer
+    }
+</style>
+<script src="~/js/JQuery/moment-with-locales.js"></script>
+<div class="row">
+    <input type="hidden" id="userId" value="@user.Id" />
+    @foreach (var status in Model.TripStatuscounts)
+    {
+        <div class="col-lg-3 col-6">
+
+            @switch (status.Key)
+            {
+                case "All":
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3 id="allTripsCount"> @status.Value</h3>
+
+                            <p>@status.Key</p>
+                        </div>
+                        <div class="icon">
+
+                            <i class="far fa-star"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div> break;
+                case "Pending":
+                    <div class="small-box bg-primary">
+                        <div class="inner">
+                            <h3 id="pendingCount"> @status.Value</h3>
+
+                            <p>@status.Key</p>
+                        </div>
+                        <div class="icon bg-white">
+                            <i class="far fa-calendar-alt"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div> break;
+                case "InProgress":
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3 id="inprogressCount"> @status.Value</h3>
+
+                            <p>@status.Key</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fa fa-location-arrow"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div> break;
+                case "CompletedTake5":
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 id="CompletedTake5Count"> @status.Value</h3>
+
+                            <p>@status.Key</p>
+                        </div>
+                        <div class="icon">
+                            <i class="far fa-thumbs-up"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                    break;
+                default:
+                    // code block
+                    break;
+
+            }
+        </div>
+    }
+</div>
+<h3>Current Trips</h3>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header p-2">
+                <ul class="nav nav-pills">
+                    @if (Model.StartedTrips != null)
+                    {
+                        <li class="nav-item"><a class="nav-link active" href="#starting" data-toggle="tab">Starting(<span id="TripStartedCount">@Model.StartedTrips.Count</span>)</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link active" href="#starting" data-toggle="tab">Starting(<span id="TripStartedCount">0</span>)</a></li>
+                    }
+                    @if (Model.DestinationArrivedTrips != null)
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#destinationArrival" data-toggle="tab">Destination Arrival(<span id="DestinationArrivedCount">@Model.DestinationArrivedTrips.Count</span>)</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#destinationArrival" data-toggle="tab">Destination Arrival(<span id="DestinationArrivedCount">0</span>)</a></li>
+                    }
+                    @if (Model.StepOneCompletedTrips != null)
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#SurveyStepOneCompleted" data-toggle="tab">Step one Completed(<span id="StepOneCompletedCount">@Model.StepOneCompletedTrips.Count</span>)</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#SurveyStepOneCompleted" data-toggle="tab">Step one Completed(<span id="StepOneCompletedCount">0</span>)</a></li>
+                    }
+                    @if (Model.StepTwoRequestModels != null)
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#requests" data-toggle="tab">Requests(<span id="StepTwoRequestCount">@Model.StepTwoRequestModels.Count</span>)</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#requests" data-toggle="tab">Requests(<span id="StepTwoRequestCount">0</span>)</a></li>
+                    }
+                    @if (Model.StepTwoCompletedTrips != null)
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#SurveyStepTwoCompleted" data-toggle="tab">Step Two Completed(<span id="StepTwoCompletedCount">@Model.StepTwoCompletedTrips.Count</span>)</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" href="#SurveyStepTwoCompleted" data-toggle="tab">Step Two Completed(<span id="StepTwoCompletedCount">0</span>)</a></li>
+                    }
+                </ul>
+            </div><!-- /.card-header -->
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="active tab-pane" id="starting">
+                        <!-- Post -->
+                        <div class="card">
+                            <div class="card-header border-transparent">
+                                <h3 class="card-title">Started Trips</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body p-0">
+
+                                <div class="table-responsive">
+                                    <table class="table m-0" id="TripStarted">
+                                        <thead>
+                                            <tr>
+                                                <th>Number</th>
+                                                <th>Jobsite</th>
+                                                <th>Driver</th>
+                                                <th>Truck</th>
+                                                <th>Started Date</th>
+                                                <th> </th>
+                                            </tr>
+                                        </thead>
+                                        @if (Model.StartedTrips != null)
+                                        {
+                                            <tbody>
+                                                @foreach (var startedTrip in Model.StartedTrips)
+                                                {
+                                                    @if (startedTrip.IsTripConverted == true)
+                                                    {
+                                                        <tr class="bg-gradient-warning" id="@startedTrip.TripNumber">
+
+                                                            <td><span class="btn-link" onclick="getTripDetails(@startedTrip.TripNumber, @startedTrip.JobsiteNumber)">@startedTrip.TripNumber</span></td>
+                                                            <td><span class="btn-link" onclick="getJobsiteDetails(@startedTrip.JobsiteNumber)">@startedTrip.JobsiteName</span></td>
+                                                            <td>@startedTrip.DriverName</td>
+                                                            <td>@startedTrip.TruckNumber</td>
+                                                            <td> @startedTrip.StatrtingDate</td>
+                                                            <td>
+                                                                <time class="timeago" datetime="@startedTrip.StatrtingDate">@startedTrip.StatrtingDate</time>
+                                                                @*<script> calculateTimeAgo(@startedTrip.StatrtingDate2.ToString("yyyy-MM-ddTHH:mm:ss"))</script>*@
+                                                            </td>
+                                                        </tr>
+
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="@startedTrip.TripNumber">
+                                                            <td><span class="btn-link" onclick="getTripDetails(@startedTrip.TripNumber, @startedTrip.JobsiteNumber)">@startedTrip.TripNumber</span></td>
+                                                            <td><span class="btn-link" onclick="getJobsiteDetails(@startedTrip.JobsiteNumber)">@startedTrip.JobsiteName</span></td>
+                                                            <td><span class="btn-link">@startedTrip.DriverName</span></td>
+                                                            <td>@startedTrip.TruckNumber</td>
+                                                            <td>
+                                                                @startedTrip.StatrtingDate
+                                                            </td>
+                                                            <td>
+                                                                <time class="timeago" datetime="@startedTrip.StatrtingDate">@startedTrip.StatrtingDate</time>
+                                                            </td>
+
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        }
+                                        @*else
+                                            {
+                                               <tr>No Trips In Starting Status</tr>
+                                            }*@
+
+                                    </table>
+                                </div>
+
+
+                                <!-- /.table-responsive -->
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.post -->
+                    </div>
+                    <!-- /.tab-pane -->
+                    <div class="tab-pane" id="destinationArrival">
+                        <!-- Post -->
+                        <div class="card">
+                            <div class="card-header border-transparent">
+
+                                <h3 class="card-title">Destination arrival</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body p-0">
+
+                                <div class="table-responsive">
+                                    <table class="table m-0" id="DestinationArrived">
+                                        <thead>
+                                            <tr>
+                                                <th>Number</th>
+                                                <th>Jobsite</th>
+                                                <th>Driver</th>
+                                                <th>Truck</th>
+                                                <th>Arrival Date</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        @if (Model.DestinationArrivedTrips != null)
+                                        {
+                                            <tbody>
+                                                @foreach (var trip in Model.DestinationArrivedTrips)
+                                                {
+                                                    @if (trip.IsTripConverted == true)
+                                                    {
+                                                        <tr class="bg-gradient-warning" id="@trip.TripNumber">
+                                                            <td><span class="btn-link" onclick="getTripDetails(@trip.TripNumber, @trip.JobsiteNumber)">@trip.TripNumber</span></td>
+                                                            <td><span class="btn-link" onclick="getJobsiteDetails(@trip.JobsiteNumber)">@trip.JobsiteName</span></td>
+                                                            <td><span class="btn-link">@trip.DriverName</span></td>
+                                                            <td>@trip.TruckNumber</td>
+                                                            <td>
+                                                                @trip.ArrivingDate
+                                                            </td>
+                                                            <td>
+                                                                <time class="timeago" datetime="@trip.ArrivingDate">@trip.ArrivingDate</time>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="@trip.TripNumber">
+                                                            <td><span class="btn-link" onclick="getTripDetails(@trip.TripNumber, @trip.JobsiteNumber)">@trip.TripNumber</span></td>
+                                                            <td><span class="btn-link" onclick="getJobsiteDetails(@trip.JobsiteNumber)">@trip.JobsiteName</span></td>
+                                                            <td><span class="btn-link">@trip.DriverName</span></td>
+                                                            <td>@trip.TruckNumber</td>
+                                                            <td> @trip.ArrivingDate</td>
+                                                            <td>
+                                                                <time class="timeago" datetime="@trip.ArrivingDate">@trip.ArrivingDate</time>
+                                                            </td>
+                                                        </tr>
+                                                    }}
+                                            </tbody>
+                                        }
+                                        @*else
+                                            {
+                                                <h3>No Trips in Destination arrived Status</h3>
+                                            }*@
+                                    </table>
+                                </div>
+
+
+                                <!-- /.table-responsive -->
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.post -->
+                    </div>
+                    <!-- /.tab-pane -->
+                    <div class="tab-pane" id="SurveyStepOneCompleted">
+                        <!-- Post -->
+                        <div class="card">
+                            <div class="card-header border-transparent">
+                                <h3 class="card-title">Step one Completed</h3>
+
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body p-0">
+
+                                <div class="table-responsive">
+                                    <table class="table m-0" id="StepOneCompleted">
+                                        <thead>
+                                            <tr>
+                                                <th>Number</th>
+                                                <th>Jobsite</th>
+                                                <th>Driver</th>
+                                                <th>Truck</th>
+                                                <th>Date</th>
+                                                <th> </th>
+                                            </tr>
+                                        </thead>
+                                        @if (Model.StepOneCompletedTrips != null)
+                                        {
+                                            <tbody>
+                                                @foreach (var stepOneCompleteTrip in Model.StepOneCompletedTrips)
+                                                {
+                                                    @if (stepOneCompleteTrip.IsTripConverted == true)
+                                                    {
+                                                        <tr class="bg-gradient-warning" id="@stepOneCompleteTrip.TripNumber">
+
+                                                            <td><span class="btn-link" onclick="getTripDetails(@stepOneCompleteTrip.TripNumber, @stepOneCompleteTrip.JobsiteNumber)">@stepOneCompleteTrip.TripNumber</span></td>
+                                                            <td><span class="btn-link" onclick="getJobsiteDetails(@stepOneCompleteTrip.JobsiteNumber)">@stepOneCompleteTrip.JobsiteName</span></td>
+                                                            <td><span class="btn-link">@stepOneCompleteTrip.DriverName</span></td>
+                                                            <td>@stepOneCompleteTrip.TruckNumber</td>
+                                                            <td> @stepOneCompleteTrip.StepOneCompletedDate</td>
+                                                            <td>
+                                                                <time class="timeago" datetime="@stepOneCompleteTrip.StatrtingDate">@stepOneCompleteTrip.StatrtingDate</time>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="@stepOneCompleteTrip.TripNumber">
+                                                            <td><span class="btn-link" onclick="getTripDetails(@stepOneCompleteTrip.TripNumber, @stepOneCompleteTrip.JobsiteNumber)">@stepOneCompleteTrip.TripNumber</span></td>
+                                                            <td><span class="btn-link" onclick="getJobsiteDetails(@stepOneCompleteTrip.JobsiteNumber)">@stepOneCompleteTrip.JobsiteName</span></td>
+                                                            <td><span class="btn-link">@stepOneCompleteTrip.DriverName</span></td>
+                                                            <td>@stepOneCompleteTrip.TruckNumber</td>
+                                                            <td>
+                                                                @stepOneCompleteTrip.StatrtingDate
+                                                            </td>
+                                                            <td>
+                                                                <time class="timeago" datetime="@stepOneCompleteTrip.StatrtingDate">@stepOneCompleteTrip.StatrtingDate</time>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        }
+                                        @*else
+                                            {
+                                                <h3>No Trips</h3>
+                                            }*@
+                                    </table>
+                                </div>
+
+
+                                <!-- /.table-responsive -->
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.post -->
+                    </div>
+                    <div class="tab-pane" id="SurveyStepTwoCompleted">
+                        <!-- Post -->
+                        <div class="card">
+                            <h3 class="card-title">Step Two Completed</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body p-0">
+
+                            <div class="table-responsive">
+                                <table class="table m-0" id="StepTwoCompleted">
+                                    <thead>
+                                        <tr>
+                                            <th>Number</th>
+                                            <th>Jobsite</th>
+                                            <th>Driver</th>
+                                            <th>Truck</th>
+                                            <th>Date</th>
+                                            <th> </th>
+                                        </tr>
+                                    </thead>
+                                    @if (Model.StepTwoCompletedTrips != null)
+                                    {
+                                        <tbody>
+                                            @foreach (var stepTwoCompleteTrip in Model.StepTwoCompletedTrips)
+                                            {
+                                                @if (stepTwoCompleteTrip.IsTripConverted == true)
+                                                {
+                                                    <tr class="bg-gradient-warning" id="@stepTwoCompleteTrip.TripNumber">
+
+                                                        <td><span class="btn-link" onclick="getTripDetails(@stepTwoCompleteTrip.TripNumber, @stepTwoCompleteTrip.JobsiteNumber)">@stepTwoCompleteTrip.TripNumber</span></td>
+                                                        <td><span class="btn-link" onclick="getJobsiteDetails(@stepTwoCompleteTrip.JobsiteNumber)">@stepTwoCompleteTrip.JobsiteName</span></td>
+                                                        <td><span class="btn-link">@stepTwoCompleteTrip.DriverName</span></td>
+                                                        <td>@stepTwoCompleteTrip.TruckNumber</td>
+                                                        <td> @stepTwoCompleteTrip.StatrtingDate</td>
+                                                        <td> <time class="timeago" datetime="@stepTwoCompleteTrip.StatrtingDate">@stepTwoCompleteTrip.StatrtingDate</time></td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    <tr id="@stepTwoCompleteTrip.TripNumber">
+                                                        <td><span class="btn-link" onclick="getTripDetails(@stepTwoCompleteTrip.TripNumber, @stepTwoCompleteTrip.JobsiteNumber)">@stepTwoCompleteTrip.TripNumber</span></td>
+                                                        <td><span class="btn-link" onclick="getJobsiteDetails(@stepTwoCompleteTrip.JobsiteNumber)">@stepTwoCompleteTrip.JobsiteName</span></td>
+                                                        <td><span class="btn-link">@stepTwoCompleteTrip.DriverName</span></td>
+                                                        <td>@stepTwoCompleteTrip.TruckNumber</td>
+                                                        <td>
+                                                            @stepTwoCompleteTrip.StatrtingDate
+                                                        </td>
+                                                        <td> <time class="timeago" datetime="@stepTwoCompleteTrip.StatrtingDate">@stepTwoCompleteTrip.StatrtingDate</time></td>
+                                                    </tr>
+                                                }}
+                                        </tbody>
+                                    }
+                                    @*else
+                                        {
+                                            <h3>No Trips</h3>
+                                        }*@
+                                </table>
+                            </div>
+
+
+                            <!-- /.table-responsive -->
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.post -->
+                    <div class="tab-pane" id="requests">
+                        <div class="card">
+                            <div class="card-header border-transparent">
+                                <h3 class="card-title">Step2 Requests</h3>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table m-0" id="StepTwoRequest">
+                                        <thead>
+                                            <tr>
+                                                <th>Number</th>
+                                                <th>Jobsite</th>
+                                                <th>Driver</th>
+                                                <th>Step1 Complated at</th>
+                                                <th>Request Date</th>
+                                                <th> </th>
+                                                <th> </th>
+                                            </tr>
+                                        </thead>
+                                        @if (Model.StepTwoRequestModels != null)
+                                        {
+                                            <tbody>
+                                                @foreach (var request in Model.StepTwoRequestModels)
+                                                {
+                                                    approveButtonId = "AprroveButton" + @request.TripId;
+                                                    <tr id="@request.TripId">
+                                                        <td><span class="btn-link" onclick="getTripDetails(@request.TripId, @request.JobsiteId)">@request.TripId</span></td>
+                                                        <td><span class="btn-link" onclick="getJobsiteDetails(@request.JobsiteId)">@request.JobsiteName</span></td>
+                                                        <td><span class="btn-link">@request.DriverName</span></td>
+                                                        <td>
+                                                            @request.StageOneComplatedTime
+                                                        </td>
+                                                        <td>
+                                                            @request.StageTwoRequestDate
+                                                        </td>
+                                                        <td> <time class="timeago" datetime="@request.StageOneComplatedTime">@request.StageOneComplatedTime</time></td>
+                                                        <td id=@approveButtonId>
+                                                            @if (request.RequestStatusName == "Pending")
+                                                            {
+                                                                <button class="btn btn-success" onclick="approveStep2Request(@request.TripId, @request.JobsiteId)">Approve</button> }
+                                                            else
+                                                            {
+                                                                <b style='color:green'> @request.RequestStatusName </b>
+                                                            }
+                                                            @*@if (request.WarningMessage != null)
+                                                            {
+                                                                <small class="badge badge-warning" data-toggle="tooltip" data-placement="bottom" title="@request.WarningMessage">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                </small>
+                                                             }*@
+
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        }
+                                        @*else
+                                            {
+                                                <h3>No Trips</h3>
+                                            }*@
+                                    </table>
+                                </div>
+                                <!-- /.table-responsive -->
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+
+                    </div>
+                    <!-- /.tab-pane -->
+
+                    <div class="tab-pane" id="completedTrips">
+                        <div class="card">
+                            <div class="card-header border-transparent">
+                                <h3 class="card-title">Completed Trips</h3>
+
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body p-0">
+                                <!-- /.table-responsive -->
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- /.tab-content -->
+            </div><!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+
+</div>
+
+<!--<div class="modal fade" id="tripHomeModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestModalLabel">Trip Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearElements()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col col-lg-12 mb-2 mb-lg-0">
+                        <div class="card mb-1" style="border-radius: .5rem; padding:10px">
+                            <div class="card-header p-2">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item"><a class="nav-link active" href="#info" data-toggle="tab">Trip info.</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#timeline" data-toggle="tab">TimeLine</a></li>
+                                </ul>
+                            </div><!-- /.card-header -->
+<!--<div class="card-body p-1">
+    <div class="tab-content">
+        <div class="active tab-pane" id="info">
+            <h6>Trip Information</h6>
+            <hr class="mt-0 mb-1">
+            <div class="row pt-1">
+                <strong style="text-decoration:underline; display:block"><i class="fas fa-book mr-1"></i>Trip</strong>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Number:-</label>
+                    <label class="text-muted" id="TripNumber"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Active:-</label>
+                    <label class="text-muted" id="TripActive"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Trip Status:-</label>
+                    <label class="text-muted" id="TripStatus"></label>
+                </div>
+                <div class="col-6 mb-1">
+                    <label class="control-label model-label">Take5 Status:-</label>
+                    <label class="text-muted" id="Take5Status"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Converted</label>
+                    <label class="text-muted" id="TripConverted"></label>
+                </div>
+                <div class="col-6 mb-1">
+                    <label class="control-label model-label">Trip Date</label>
+                    <label class="text-muted" id="TripDate"></label>
+                </div>
+            </div>
+
+            <div class="row pt-1">
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Truck Number</label>
+                    <label class="text-muted" id="TruckNumber"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <strong style="text-decoration:underline"><i class="fas fa-landmark mr-1"></i>Jobsite</strong>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Number:-</label>
+                    <label class="text-muted" id="JobsiteNumber"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Name</label>
+                    <label class="text-muted" id="JobsiteName"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <strong style="text-decoration:underline"><i class="fas fa-user mr-1"></i>Driver</strong>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Number:-</label>
+                    <label class="text-muted" id="DriverNumber"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Name:-</label>
+                    <label class="text-muted" id="DriverName"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Phone:-</label>
+                    <label class="text-muted" id="DriverPhone"></label>
+                </div>
+            </div>
+
+            <div class="row pt-1" style="display:none" id="RequestData">
+                <strong style="text-decoration:underline; display:block"><i class="fas fa-close mr-1"></i>Request Details</strong>
+                <div class="col-lg-6 mb-1" id="requestDateDiv">
+                    <label class="control-label model-label">Request Date</label>
+                    <label class="text-muted" id="RequestDate"></label>
+                </div>
+                <div class="col-lg-6 mb-1" id="requestStatusDiv">
+                    <label class="control-label model-label">Request Status</label>
+                    <label class="text-muted" id="RequestStatus"></label>
+                </div>
+                <div class="col-lg-6 mb-1" id="requestWhoApprovedDiv" style="display:none">
+                    <label class="control-label model-label">Who Approved</label>
+                    <label class="text-muted" id="RequestWhoApproved"></label>
+                </div>
+                <div class="col-lg-6 mb-1" id="responseDateDiv" style="display:none">
+                    <label class="control-label model-label">Response Date</label>
+                    <label class="text-muted" id="responseDate"></label>
+                </div>
+            </div>
+
+            <div class="row pt-1" style="display:none" id="cancellationData">
+                <strong style="text-decoration:underline; display:block"><i class="fas fa-close mr-1"></i>Cancellation</strong>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Employee:-</label>
+                    <label class="text-muted" id="CancelEmployeeName"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Date</label>
+                    <label class="text-muted" id="CancelDate"></label>
+                </div>
+                <div class="col-lg-12 mb-1">
+                    <label class="control-label model-label">Reason</label>
+                    <p class="text-muted" id="CancelReason"></p>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="timeline">
+
+            <div class="row pt-1">
+                <div class="col-lg-12">
+                    <h3>TimeLine</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">-->
+<!-- The time line -->
+<!--<div class="timeline" id="TripTimeline">-->
+<!-- timeline time label -->
+<!--<div class="time-label">
+    <span class="bg-red" id="TimelineTripId"></span>
+</div>-->
+<!-- /.timeline-label -->
+<!-- timeline item -->
+<!--<div>
+    <i class="fas fa-truck-moving bg-red"></i>
+    <div class="timeline-item">-->
+@*<span class="time"><i class="fas fa-clock"></i> 12:05</span>*@
+@*<h3 class="timeline-header" style="color: dodgerblue; font-weight: bold">Assign</h3>
+                    <div class="timeline-body" id="TimelineTripAssign">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>*@
+<!-- /.col -->
+<!--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="clearElements()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+
+<div class="modal fade" id="jobsiteModal" tabindex="-1" role="dialog" aria-labelledby="jobsiteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestModalLabel">Jobsite Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="jobsiteModelClearElements()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col col-lg-12 mb-2 mb-lg-0">
+                        <div class="card mb-1" style="border-radius: .5rem; padding:10px">
+                            <div class="card-body p-1">
+                                <h6>Jobsite Information</h6>
+                                <hr class="mt-0 mb-1">
+                                <div class="row pt-1">
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Number</label>
+                                        <label class="text-muted" id="j_JobsiteNumber"></label>
+                                    </div>
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Name</label>
+                                        <label class="text-muted" id="j_JobsiteName"></label>
+                                    </div>
+                                </div>
+
+                                <div class="row pt-1">
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Longatuide</label>
+                                        <label class="text-muted" id="j_Longatuide"></label>
+                                    </div>
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Latatuide</label>
+                                        <label class="text-muted" id="j_Latatuide"></label>
+                                    </div>
+                                </div>
+                                <div class="row pt-1">
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">HasNetworkCoverage</label>
+                                        <label class="text-muted" id="j_HasNetworkCoverage"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="jobsiteModelClearElements()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/JQuery/jquery-3.5.1.js"></script>
+<script src="~/js/leaflet.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".timeago").timeago();
+        $("#prog_date").text($.timeago(new Date()));
+
+    });
+        //let mapOptions = {
+        //    center: [27.1879, 31.0387],
+        //    zoom: 12,
+        //}
+        //let map = new L.map('map', mapOptions);
+
+        //let layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        //map.addLayer(layer);
+        //var myicon = L.divIcon({
+        //    className: 'custom-div-icon',
+        //    html: "<div style='background-color:#4838cc;' class='marker-pin'></div><i class='fa-solid fa-car'",
+        //    iconSize: [30, 42],
+        //    iconAnchor: [15, 42]
+        //});
+        //let marker = new L.Marker([27.1879, 31.0387], { icon: myicon });
+        //marker.addTo(map);
+
+    function getJobsiteDetails(jobsiteId) {
+                var url = '@Url.Content("~/")' + "Take5/JobSite/GetDetails";
+                $.getJSON(url, { id: jobsiteId }, function (data) {
+                    if (data != null) {
+                        document.getElementById("j_JobsiteNumber").innerText = data['Id'];
+                        document.getElementById("j_JobsiteName").innerText = data['Name'];
+                        document.getElementById("j_Longatuide").innerText = data['Longitude'];
+                        document.getElementById("j_Latatuide").innerText = data['Latitude'];
+                        document.getElementById("j_HasNetworkCoverage").innerText = data['HasNetworkCoverage'];
+                        $('#jobsiteModal').modal('show');
+                    }
+                });
+        }
+</script>
+<script>
+    @*function getTripDetails(id, jobSiteId)
+        {
+         var url = '@Url.Content("~/")' + "Take5/Trip/getTripDetails";
+                $.getJSON(url, { tripId: id, jobSiteId: jobSiteId }, function (data) {
+                    if (data != null)
+                    {
+                        document.getElementById("TripNumber").innerText =    data["Trip"]["Id"];
+                        document.getElementById("TruckNumber").innerText =   data["Trip"]["TruckId"];
+                        document.getElementById("JobsiteNumber").innerText = data["JobSite"]["Id"];
+                        document.getElementById("JobsiteName").innerText =   data["JobSite"]["Name"];
+                        document.getElementById("DriverNumber").innerText =  data.Trip.Driver["Id"];
+                        document.getElementById("DriverName").innerText =    data.Trip.Driver["FullName"];
+                        document.getElementById("DriverPhone").innerText = data.Trip.Driver["PhoneNumber"];
+                        document.getElementById("TripDate").innerText = data["TripDateText"] ;
+                        document.getElementById("TripConverted").innerText = data["Converted"];
+                        document.getElementById("TripStatus").innerText =    data["TripStatusText"];
+                        document.getElementById("Take5Status").innerText =   data["Take5StatusText"];
+                        document.getElementById("TripActive").innerText =    data["IsVisible"];
+                        document.getElementById("TimelineTripId").innerText = "Trip Number " + data["Trip"]["Id"];
+                        document.getElementById("TimelineTripAssign").innerText = data["CreatedDateText"];
+                        if (data['TripCancellationModel'] != null)
+                        {
+                            document.getElementById("CancelEmployeeName").innerText = data["TripCancellationModel"]["EmployeeName"];
+                            document.getElementById("CancelDate").innerText = data["TripCancellationModel"]["CreatedDate"];
+                            document.getElementById("CancelReason").innerText = data["TripCancellationModel"]["Reason"];
+                            document.getElementById("cancellationData").style.display = '';
+                        }
+                        if (data["StageTwoRequestDate"] != null) {
+                            document.getElementById("RequestDate").innerText = data["StageTwoRequestDate"];
+                            document.getElementById("RequestStatus").innerText = data["RequestStatusName"];
+                            if (data["RequestResponsedByName"] != null)
+                            {
+                                document.getElementById("RequestWhoApproved").innerText = data["RequestResponsedByName"];
+                                document.getElementById("requestWhoApprovedDiv").style.display = '';
+
+                                document.getElementById("responseDate").innerText = data["StageTwoResponseDateText"];
+                                document.getElementById("responseDateDiv").style.display = '';
+                            }
+                            document.getElementById("RequestData").style.display = '';
+                        }
+                        if (data["StartingDate"] != null && data["TripStatusText"] != "") {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-green");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Starting";
+                            var statingTimeSpan = document.createElement("span");
+                            statingTimeSpan.innerText = data["StartingDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'>";
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(statingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["DestinationArrivingDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-yellow");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Destination Arrivial";
+                            var DestinationArrivingTimeSpan = document.createElement("span");
+                            DestinationArrivingTimeSpan.innerText = data["DestinationArrivingDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(DestinationArrivingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageOneComplatedTime"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step One Completion";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageOneComplatedTimeText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoRequestDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Request";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoRequestDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoResponseDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Response";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoResponseDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoComplatedTime"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Completion";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoComplatedTimeText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["TripStatusText"] == "TripCompleted") {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "far fa-clock bg-gray");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Completed";
+                            timelineBodyDiv.appendChild(h6);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        else if (data["Trip"]["Cancelled"] == true)
+                        {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "far fa-clock bg-gray");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Cancelled";
+                            timelineBodyDiv.appendChild(h6);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        else if (data["Converted"] == true) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "far fa-clock bg-gray");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Converted";
+                            timelineBodyDiv.appendChild(h6);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                    }
+                    else
+                    {
+
+                    }
+                });
+            $('#tripHomeModal').modal('show');
+    }
+    function clearElements() {
+        $(".TimeInfo").remove();
+        document.getElementById("cancellationData").style.display = 'none';
+        document.getElementById("requestWhoApprovedDiv").style.display = 'none';
+        document.getElementById("responseDateDiv").style.display = 'none';
+        document.getElementById("requestData").style.display = 'none';
+    }*@
+
+    function jobsiteModelClearElements(){
+        $(".TimeInfo").remove();
+    }
+
+</script>
+
+
+<script>
+    function approveStep2Request(tripNumber, jobsiteNumber)
+    {
+        var url = '@Url.Content("~/")' + "Take5/Trip/ApproveStepTwoRequest";
+        $.getJSON(url, { tripNumber: tripNumber, jobsiteNumber: jobsiteNumber }, function (data) {
+            if (!data.includes('Failed'))
+            {
+                document.getElementById("AprroveButton" + tripNumber).innerHTML = "<b style ='color:green'> Approved </b>";
+                swal("Success Process! Request has been approved!", {
+                    icon: "success",
+                });
+            }
+            else
+            {
+                swal("Failed Process", {
+                    icon: "Warning",
+                });
+            }
+        });
+    }
+</script>
+@*<script src="~/lib/aspnet/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/site.js"></script>*@

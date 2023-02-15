@@ -1,0 +1,103 @@
+﻿@model Take5.Services.Models.MasterModels.DangerModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+<h1>Details</h1>
+    <hr />
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">@Model.Name</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tr>
+                                <th>Name</th>
+                                <td>@Model.Name</td>
+                            </tr>
+                            <tr>
+                                <th>Category</th>
+                                <td>@Model.DangerCategory.Name</td>
+                            </tr>
+                            <tr>
+                                <th>Active</th>
+                                <td>@Model.IsVisible</td>
+                            </tr>
+                            <tr>
+                                <th>Created at</th>
+                                <td>@Model.CreatedDate</td>
+                            </tr>
+                            <tr>
+                                <th>Updated at</th>
+                                <td>@Model.UpdatedDate</td>
+                            </tr>
+                            <tr>
+                                <th>Image</th>
+                                <td><img src="~/images/dangerIcons/@Model.Icon" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    @if (Model.measureControlModels.Count > 0)
+    {
+        <table id="example1" class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Active</th>
+                    <th>Created at</th>
+                    <th>Updated at</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var control in Model.measureControlModels)
+                {
+                    <tr>
+                        <td>@control.Name</td>
+                        <td>@control.IsVisible</td>
+                        <td>@control.CreatedDate</td>
+                        <td>@control.UpdatedDate</td>
+                        <td>
+                            <a class="btn btn-primary btn-sm" asp-action="Details" asp-route-id="@control.Id">
+                                <i class="fas fa-eye">
+                                </i>
+                            </a>
+                            <a class="btn btn-info btn-sm" asp-action="Edit" asp-route-id="@control.Id">
+                                <i class="fas fa-pen">
+                                </i>
+                            </a>
+
+                            <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@control.Id">
+                                <i class="fas fa-trash">
+                                </i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+    <script>
+    $(function () {
+        $("#example1").DataTable({
+            "responsive": true, "lengthChange": false, "autoWidth": false
+        }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+        $('#example2').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    });
+    </script>

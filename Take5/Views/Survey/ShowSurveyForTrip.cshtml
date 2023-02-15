@@ -1,0 +1,216 @@
+﻿@model Take5.Services.Models.MasterModels.TripSurveyModel
+
+@{ 
+    ViewData["Title"] = "ShowSurveyForTrip"; 
+    }
+<style>
+    input {
+        pointer-events: none;
+    }
+
+    ul {
+        list-style-type: none;
+    }
+</style>
+
+@if (Model != null)
+{
+<div class="p-5 mb-3" dir="rtl">
+    <div class="card card-primary" dir="rtl">
+        <div class="card-header float-right" dir="rtl">
+            <h3 class="card-title float-right text-right" dir="rtl">بيانات الرحلة</h3>
+
+            <div class="card-tools float-right" dir="rtl">
+                <button type="button" class="btn btn-tool float-right" data-card-widget="collapse" title="Collapse" dir="rtl">
+                    <i class="fas fa-minus float-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <h4 class="text-center">@Model.TripJobsiteModel.Trip.Driver.FullName</h4>
+            <hr />
+            <br />
+            <div class="row float-right" dir="rtl">
+                <div class="row text-right" dir="rtl">
+                    <ul>
+                        <li><strong>اسم السائق:-</strong></li>
+                        <li><strong>رقم الرحلة</strong></li>
+                        <li><strong>الموقع:-</strong></li>
+                        <li><strong>رقم السيارة:-</strong></li>
+                        <li><strong> تاريخ الرحلة:-</strong></li>
+                    </ul>
+                    <ul>
+                        <li>@Model.TripJobsiteModel.Trip.Driver.FullName</li>
+                        <li>@Model.TripJobsiteModel.TripId</li>
+                        <li>@Model.TripJobsiteModel.JobSite.Name</li>
+                        <li>@Model.TripJobsiteModel.Trip.TruckId</li>
+                        <li>@Model.TripJobsiteModel.Trip.TripDate.ToString("HH:mm:ss yyyy-MM-dd")</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <hr />
+    <div class="card card-primary" dir="rtl">
+        <div class="card-header float-right" dir="rtl">
+            <h3 class="card-title float-right text-right" dir="rtl">المرحلة الأولي</h3>
+
+            <div class="card-tools float-right" dir="rtl">
+                <button type="button" class="btn btn-tool float-right" data-card-widget="collapse" title="Collapse" dir="rtl">
+                    <i class="fas fa-minus float-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row float-right" dir="rtl">
+                @if (Model.SurveyStepOneAnswersModels != null)
+                {
+
+<ol>
+    @foreach (var item in Model.SurveyStepOneAnswersModels)
+    {
+<li>
+    <div class="col-lg-12 text-right" dir="rtl">
+        <strong>@item.QuestionText </strong>
+        @if (item.Answer == true)
+        {
+<label>
+    نعم
+</label> }
+else
+{
+<label>
+    لا
+</label>}
+    </div>
+    <hr />
+</li>}
+</ol>
+
+                    @if (Model.SurveyStepOneDangersModels != null)
+                    {
+<div class="row float-right" dir="rtl">
+    <h5 class="float-right" dir="rtl">المخاطر</h5>
+    @foreach (var danger in Model.SurveyStepOneDangersModels)
+    {
+<div class="col-lg-12 text-right" dir="rtl">
+    <strong class="float-right" dir="rtl">@danger.DangerModel.Name</strong>
+    <ol class="float-right" dir="rtl">
+        @foreach (var control in danger.measureControlModels)
+        {
+<li>@control.Name</li>}
+    </ol>
+</div>}
+</div>} }
+                else
+                {
+<h4 style="margin:auto"> لاتوجد حتي الآن</h4>}
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="card card-primary" dir="rtl">
+        <div class="card-header float-right" dir="rtl">
+            <h3 class="card-title float-right text-right" dir="rtl">المرحلة الثانية</h3>
+
+            <div class="card-tools float-right" dir="rtl">
+                <button type="button" class="btn btn-tool float-right" data-card-widget="collapse" title="Collapse" dir="rtl">
+                    <i class="fas fa-minus float-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row float-right" dir="rtl">
+                @if (Model.SurveyStepTwoAnswersModels != null)
+                {
+<ol>
+    @foreach (var item in Model.SurveyStepTwoAnswersModels)
+    {
+<li>
+    <div class="col-lg-12 text-right" dir="rtl">
+        <strong>@item.QuestionText </strong>
+        @if (item.Answer == true)
+        {
+<label>
+    نعم
+</label> }
+else
+{
+<label>
+    لا
+</label>}
+    </div>
+    <hr />
+</li>}
+</ol> }
+else
+{
+<h4 style="margin:auto"> لاتوجد حتي الآن</h4>}
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="card card-primary" dir="rtl">
+        <div class="card-header float-right" dir="rtl">
+            <h3 class="card-title float-right text-right" dir="rtl">Take5 Together</h3>
+
+            <div class="card-tools float-right" dir="rtl">
+                <button type="button" class="btn btn-tool float-right" data-card-widget="collapse" title="Collapse" dir="rtl">
+                    <i class="fas fa-minus float-right"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row float-right" dir="rtl">
+                @if (Model.tripTake5TogetherModels != null)
+                {
+            @foreach (var togetherModel in Model.tripTake5TogetherModels)
+            {
+
+                <div class="col-lg-12 text-right" dir="rtl">
+                    <ul style="list-style:square">
+                        <li>
+
+                            <strong>اسم الزميل</strong>
+                            <strong>@togetherModel.ParticipantDriver.FullName</strong>
+                        </li>
+
+                        <li>
+
+                            <strong>من الذي بدء المحادثة</strong>
+                            <strong>@togetherModel.WhoStartDriver.FullName</strong>
+                        </li>
+                        <li>
+
+                            <strong>ملاحظات</strong>
+                            <p>@togetherModel.Notes</p>
+                        </li>
+                    </ul>
+                    <hr />
+
+                </div>
+                                    } 
+                }
+                            else
+                            {
+            <h4 style="margin:auto"> لاتوجد حتي الآن</h4>}
+            </div>
+         
+        </div>
+        </div>
+    </div>
+
+}
+else
+  {
+     <h4 style="margin:auto" class="mt-5"> No Data</h4>
+  }

@@ -1,0 +1,220 @@
+﻿@model Take5.Services.Models.MasterModels.TripJobsiteModel
+
+@{ ViewData["Title"] = "ConvertTrip"; }
+<link href="~/css/leaflet.css" rel="stylesheet" />
+<link href="~/css/site.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal(message, {
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal(error, {
+                icon: "success",
+            });
+        }
+
+
+    }
+</script>
+@*<script>
+        showAlert("Message");
+    </script>*@
+@if (TempData["Message"] != null)
+{
+<input type="hidden" id="message" value="@TempData["Message"]" />
+                <script>
+                    showAlert("Message");
+                </script>
+ }
+                            else if (TempData["Error"] != null)
+                            {
+                <input type="hidden" id="error" value="@TempData["Error"]" />
+                                <script>
+                                    showAlert("Error");
+                                </script>
+}
+
+<style>
+
+    .marker-pin {
+        width: 30px;
+        height: 30px;
+        border-radius: 50% 50% 50% 0;
+        background: #c30b82;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 50%;
+        top: 50%;
+        margin: -15px 0 0 -15px;
+    }
+
+        .marker-pin::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            margin: 3px 0 0 3px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+
+    .custom-div-icon i {
+        position: absolute;
+        width: 22px;
+        font-size: 22px;
+        left: 0;
+        right: 0;
+        margin: 10px auto;
+        text-align: center;
+    }
+
+        .custom-div-icon i.awesome {
+            margin: 12px auto;
+            font-size: 17px;
+        }
+</style>
+<h4>ConvertTrip</h4>
+
+<hr />
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title"></h4>
+    </div>
+    <div class="card-body">
+        <div class="basic-form">
+            <form asp-action="ConvertTrip">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <input type="hidden" asp-for="TripId" value="@Model.TripId" />
+                        <label class="control-label">Trip Number:- </label>
+                        <label asp-for="TripId" class="form-label">@Model.TripId</label>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="control-label">Truck Number:- </label>
+                        <label class="form-label">@Model.Trip.TruckId</label>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Driver:- </label>
+                        <label class="form-label">@Model.Trip.Driver.FullName</label>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">JobSite</label>
+                        <input type="hidden" asp-for="ConvertedJobSiteId" />
+                        <select style="display:inline-block !important" asp-for="JobSiteId" id="JobSiteSelectedId" class="form-control" asp-items="@(new SelectList(Model.Jobsites, "Id", "Name"))"></select>
+                        <span asp-validation-for="JobSiteId" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="form-group" style="margin:auto">
+                    <input type="submit" value="Convert" class="btn btn-primary" />
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-md-12" style="margin-top:20px">
+        <div id="map">
+
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+<script src="~/js/JQuery/jquery-3.5.1.js"></script>
+<script src="~/js/leaflet.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //let customIcon = {
+        //    iconUrl: "/images/marker-icon.jpg",
+        //        iconSize: [20, 20]
+        //}
+        //let myIcon = L.icon(customIcon);
+        //let iconOptions = {
+        //    title: "company name",
+        //    draggable: false,
+        //    icon: myIcon
+        //}
+
+
+
+        let mapOptions = {
+            center: [27.1879, 31.0387],
+            zoom: 12,
+        }
+
+
+        let map = new L.map('map', mapOptions);
+
+        let layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        map.addLayer(layer);
+        var myicon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div style='background-color:#4838cc;' class='marker-pin'></div><i class='fa-solid fa-car'",
+            iconSize: [30, 42],
+            iconAnchor: [15, 42]
+        });
+        let marker = new L.Marker([27.1879, 31.0387], { icon: myicon });
+        marker.addTo(map);
+
+        $('#JobSiteSelectedId').change(function () {
+            var ddlsource = "#JobSiteSelectedId";
+            var tripNumber = document.getElementById("TripId").value;
+            var subItems = '';
+            if ($(ddlsource).val() != -1) {
+                var url = '@Url.Content("~/")' + "Take5/JobSite/CheckIfThisJobsiteAssignedToThisTripBeforeOrNot";
+                $.getJSON(url, { jobsiteNumber: $(ddlsource).val(), tripNumber: tripNumber }, function (data)
+                {
+                    if (!data.includes('Failed'))
+                    {
+                        var popup = '<b>Name:</b> ' + data['Name'] +
+                            '<br/><b>Latitude:</b> ' + data['Latitude'] +
+                            '<br/><b>Longitude:</b> ' + data['Longitude'] +
+                            '<br/><b> Desc:</b> ' + data['Desc']
+                            + '<br/><b> Has Network:</b> ' + data['HasNetworkCoverage'];
+                        //alert(data['Latitude'], data['Longitude']);
+                        var lat = parseFloat(data['Latitude']);
+                        var long = parseFloat(data['Longitude']);
+                        let marker2 = new L.Marker([lat, long], { icon: myicon }).bindPopup(popup);
+                        marker2.addTo(map);
+                        map.flyTo([lat, long]);
+                    }
+                    else
+                    {
+                        $("#JobSiteSelectedId").prop("selectedIndex", -1);
+                        swal(data,
+                            {
+                                icon: "error",
+                            });
+                    }
+                });
+            }
+            else {
+                swal("No Data!", {
+                    icon: "error",
+                });
+            }
+        });
+    });
+
+</script>

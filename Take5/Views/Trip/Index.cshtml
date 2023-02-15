@@ -1,0 +1,532 @@
+﻿@model IEnumerable<Take5.Services.Models.MasterModels.TripJobsiteModel>
+
+@{ ViewData["Title"] = "Index"; }
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal({
+                title: "Cancelled!",
+                text: message,
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal({
+                title: "Failed Process!",
+                text: error,
+                icon: "error",
+            });
+        }
+    }
+</script>
+@if (ViewBag.Message != null)
+{
+<input type="hidden" id="message" value="@ViewBag.Message" />
+                <script>
+                    showAlert("Message");
+                </script> }
+                            else if (ViewBag.Error != null)
+                            {
+                <input type="hidden" id="error" value="@ViewBag.Error" />
+                                <script>
+                                    showAlert("Error");
+                                </script>}
+<h1>Index</h1>
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">Trips</div>
+            <div class="card-body">
+                @if (Model != null)
+                {
+    <table id="example1" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>
+                    Trip Number
+                </th>
+                <th>
+                    Trip Date
+                </th>
+                <th>
+                    Driver
+                </th>
+                <th>
+                    Truck
+                </th>
+                <th>
+                    JobSite
+                </th>
+                <th>Actions</th>
+                <th>Converted</th>
+                <th>Active</th>
+                <th>Created at</th>
+                <th>Updated at</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+<tr id="@item.Trip.Id">
+    <td>
+        @Html.DisplayFor(modelItem => item.Trip.Id)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Trip.TripDate)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Trip.Driver.FullName)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Trip.Truck.Id)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.JobSite.Id)
+    </td>
+
+    <td class="btn-group btn-group-sm">
+        <button class="btn btn-primary" asp-action="Details" onclick="getTripDetails(@item.TripId, @item.JobSiteId)">
+            <i class="fas fa-eye">
+            </i>
+        </button>
+        @if (item.TripStatus == (int)CommanData.TripStatus.Pending)
+        {
+                        <a class="btn btn-info" asp-action="Edit" asp-route-TripNumber="@item.TripId">
+                            <i class="fas fa-pen">
+                            </i>
+                        </a>
+                        <a class="btn btn-danger" onclick="DeleteTrip(@item.TripId)">
+                            <i class="fas fa-trash">
+                            </i>
+                        </a> 
+                        }
+                    else
+                    {
+                        <a class="btn btn-info disabled" role="link" onclick="alert('Can not edit trip after starting')">
+                            <i class="fas fa-pen">
+                            </i>
+                        </a>
+                        <a role="link" class="btn btn-danger disabled" onclick="alert('Can not delete trip after starting')">
+                            <i class="fas fa-trash">
+                            </i>
+                        </a>
+                        }
+        @if (item.TripStatus != (int)CommanData.TripStatus.Pending && item.Take5Status != (int)CommanData.Take5Status.Completed)
+        {
+<a class="btn btn-success" asp-action="ConvertTrip" asp-route-TripNumber="@item.TripId" asp-route-jobsiteId="@item.JobSiteId">
+    <i class="fas fa-arrow-right">
+    </i>
+</a> }
+else
+{
+<a class="btn btn-success disabled" role="link" onclick="alert('Can not convert trip at this stage')">
+    <i class="fas  fa-arrow-right">
+    </i>
+</a>}
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Trip.IsConverted)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.IsVisible)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.CreatedDate)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.UpdatedDate)
+    </td>
+</tr>
+}
+        </tbody>
+    </table> }
+else
+{
+<h2>There Is No Trips</h2>}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="tripModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestModalLabel">Trip Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearElements()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col col-lg-12 mb-2 mb-lg-0">
+                        <div class="card mb-1" style="border-radius: .5rem; padding:10px">
+                            <div class="card-body p-1">
+                                <h6>Trip Information</h6>
+                                <hr class="mt-0 mb-1">
+                                <div class="row pt-1">
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Number</label>
+                                        <label class="text-muted" id="TripNumber"></label>
+                                    </div>
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Active</label>
+                                        <label class="text-muted" id="TripActive"></label>
+                                    </div>
+                                </div>
+
+                                <div class="row pt-1">
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">Jobsite Number</label>
+                                        <label class="text-muted" id="JobsiteNumber"></label>
+                                    </div>
+                                    <div class="col-lg-6 mb-1">
+                                        <label class="control-label model-label">jobsite</label>
+                                        <label class="text-muted" id="JobsiteName"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row pt-1">
+                                <div class="col-lg-6 mb-1">
+                                    <label class="control-label model-label">Driver Number</label>
+                                    <label class="text-muted" id="DriverNumber"></label>
+                                </div>
+                                <div class="col-lg-6 mb-1">
+                                    <label class="control-label model-label">DriverName</label>
+                                    <label class="text-muted" id="DriverName"></label>
+                                </div>
+                            </div>
+                            <div class="row pt-1">
+                                <div class="col-lg-6 mb-1">
+                                    <label class="control-label model-label">Converted</label>
+                                    <label class="text-muted" id="TripConverted"></label>
+                                </div>
+                                <div class="col-6 mb-1">
+                                    <label class="control-label model-label">Trip Date</label>
+                                    <label class="text-muted" id="TripDate"></label>
+                                </div>
+                            </div>
+                            <div class="row pt-1">
+                                <div class="col-lg-6 mb-1">
+                                    <label class="control-label model-label">Trip Status</label>
+                                    <label class="text-muted" id="TripStatus"></label>
+                                </div>
+                                <div class="col-6 mb-1">
+                                    <label class="control-label model-label">Take5Status</label>
+                                    <label class="text-muted" id="Take5Status"></label>
+                                </div>
+                            </div>
+                            <div class="row pt-1">
+                                <div class="col-lg-6 mb-1">
+                                    <label class="control-label model-label">Truck Number</label>
+                                    <label class="text-muted" id="TruckNumber"></label>
+                                </div>
+                            </div>
+                            <div class="row pt-1">
+                                <div class="col-lg-12">
+                                    <h3>TimeLine</h3>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <!-- The time line -->
+                                    <div class="timeline" id="TripTimeline">
+                                        <!-- timeline time label -->
+                                        <div class="time-label">
+                                            <span class="bg-red" id="TimelineTripId"></span>
+                                        </div>
+                                        <!-- /.timeline-label -->
+                                        <!-- timeline item -->
+                                        <div>
+                                            <i class="fas fa-truck-moving bg-red"></i>
+                                            <div class="timeline-item">
+                                                <span class="time"><i class="fas fa-clock"></i> 12:05</span>
+                                                <h3 class="timeline-header" style="color: dodgerblue; font-weight: bold">Assign</h3>
+                                                <div class="timeline-body" id="TimelineTripAssign">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="clearElements()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script>
+    function DeleteTrip(tripId)
+    {
+        alert(tripId);
+        swal({
+            title: "Are you sure?",
+            text: "Are you sure to delete this trip!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+                if (willDelete)
+                {
+                    var url = '@Url.Content("~/")' + "Take5/Trip/Delete";
+                    $.getJSON(url, { id: tripId }, function (data) {
+                        if (data == true) {
+                            var tr = document.getElementById(tripId);
+                             tr.style.display = 'none';
+                            swal("Success Process! trip has been deleted!", {
+                                icon: "success",
+                            });
+                        }
+                        else
+                        {
+                            swal("Failed Process, trip can not be deleted!", {
+                                icon: "Error",
+                            });
+                        }
+                    });
+                }
+
+            });
+    }
+
+</script>
+<script>
+    $(function () {
+        $("#example1").DataTable({
+            "responsive": true, "lengthChange": false, "autoWidth": false,
+            "buttons": ["excel", "pdf", "print", "colvis"]}).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+        $('#example2').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+    });
+
+    function getTripDetails(id, jobSiteId)
+    {
+        var url = '@Url.Content("~/")' + "Take5/Trip/getTripDetails";
+                $.getJSON(url, { tripId: id, jobSiteId: jobSiteId }, function (data) {
+                    if (data != null)
+                    {
+                        alert(data["StartingDateText"]);
+                        document.getElementById("TripNumber").innerText =    data["Trip"]["Id"];
+                        document.getElementById("TruckNumber").innerText =   data["Trip"]["TruckId"];
+                        document.getElementById("JobsiteNumber").innerText = data["JobSite"]["Id"];
+                        document.getElementById("JobsiteName").innerText =   data["JobSite"]["Name"];
+                        document.getElementById("DriverNumber").innerText =  data.Trip.Driver["Id"];
+                        document.getElementById("DriverName").innerText =    data.Trip.Driver["FullName"];
+                        document.getElementById("TripDate").innerText =      data["TripDateText"];
+                        document.getElementById("TripConverted").innerText = data.Trip["IsTripConverted"];
+                        document.getElementById("TripStatus").innerText =    data["TripStatusText"];
+                        document.getElementById("Take5Status").innerText =   data["Take5StatusText"];
+                        document.getElementById("TripActive").innerText =    data["IsVisible"];
+                        document.getElementById("TimelineTripId").innerText = "Trip Number " + data["Trip"]["Id"];
+                        document.getElementById("TimelineTripAssign").innerText = data["CreatedDateText"];
+                        if (data["StartingDate"] != null && data["TripStatusText"] != "") {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-green");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            ii.setAttribute("class", "fas fa-clock");
+                            span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Starting";
+                            var statingTimeSpan = document.createElement("span");
+                            statingTimeSpan.innerText = data["StartingDateText"];
+                            span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(statingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["DestinationArrivingDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-yellow");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            ii.setAttribute("class", "fas fa-clock");
+                            span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Destination Arrivial";
+                            var DestinationArrivingTimeSpan = document.createElement("span");
+                            DestinationArrivingTimeSpan.innerText = data["DestinationArrivingDateText"];
+                            span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(DestinationArrivingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageOneComplatedTime"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            ii.setAttribute("class", "fas fa-clock");
+                            span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step One Completion";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageOneComplatedTimeText"];
+                            span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoRequestDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            ii.setAttribute("class", "fas fa-clock");
+                            span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Request";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoRequestDateText"];
+                            span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoResponseDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            ii.setAttribute("class", "fas fa-clock");
+                            span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Response";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoResponseDateText"];
+                            span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoComplatedTime"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            ii.setAttribute("class", "fas fa-clock");
+                            span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Completion";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoComplatedTimeText"];
+                            span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+
+                    }
+                    else
+                    {
+
+                    }
+                });
+        $('#tripModal').modal('show');
+
+    }
+    function clearElements() {
+        $(".TimeInfo").remove();
+    }
+</script>

@@ -1,0 +1,76 @@
+﻿@model Take5.Models.Auth.RoleModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>RoleModel</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            Active
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.IsVisible)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreatedDate)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UpdatedDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UpdatedDate)
+        </dd>
+    </dl>
+</div>
+@if(Model.users != null)
+            {
+<table>
+    <thead>
+        <tr>
+            <th>
+                Email
+            </th>
+            <th>
+                Created At
+            </th>
+            <th>
+                Updated At
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.users)
+        {
+        <tr>
+            <td>
+                @user.Email
+            </td>
+            <td>
+                @user.CreatedDate
+            </td>
+            <td>
+                @user.UpdatedDate
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+            }
+<div>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -1,0 +1,120 @@
+﻿@model Take5.Services.Models.MasterModels.SearchTripModel
+
+@{
+    ViewData["Title"] = "SearchTrip";
+    string checkBoxId = "";
+}
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<h1>SearchTrip</h1>
+<div>
+    <div class="card card-default">
+        <div class="card-header">
+            <h3 class="card-title">Export Trips</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <form asp-action="ExportTrip">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Trip Number</label>
+                            <input class="form-control" asp-for="TripId" style="width: 100%;" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Jobsite</label>
+                            <select class="form-control select2bs4" style="width: 100%;" asp-for="JobSiteId" asp-items="@(new SelectList(Model.JobSites, "Id", "Name"))">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Date From</label>
+                            <input class="form-control" asp-for="TripDateFrom" style="width: 100%;" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Date To</label>
+                            <input class="form-control" asp-for="TripDateTo" style="width: 100%;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Driver</label>
+                            <select class="form-control select2bs4" style="width: 100%;" asp-for="DriverId" asp-items="@(new SelectList(Model.Drivers, "Id", "FullName"))">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 ">
+                        <div class="form-group">
+                            <label>Truck</label>
+                            <select class="form-control select2bs4" style="width: 100%;" asp-for="TruckId" asp-items="@(new SelectList(Model.Trucks, "Id", "Id"))">
+                                <option value="-1" selected="selected"> Select Truck</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mt-5">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input custom-control-input-danger" type="checkbox" id="customCheckbox4" asp-for="IsTripConverted">
+                            <label class="custom-control-label" for="customCheckbox4">
+                                Converted
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mt-5">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input custom-control-input-danger" type="checkbox" id="customCheckbox5" asp-for="IsTripCancelled">
+                            <label class="custom-control-label" for="customCheckbox5">
+                                Cancelled
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mt-5">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input custom-control-input-danger" type="checkbox" id="customCheckbox3" asp-for="IsTripOffline">
+                            <label class="custom-control-label" for="customCheckbox3">
+                                Offline
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row mt-3">
+                    <label>Trip Status</label>
+                </div>
+                <div class="row mt-3">
+
+                    @foreach (var status in Model.tripStatusModels)
+                    {
+                        checkBoxId = "checkBoxId" + status.Id;
+                        <div class="col-lg-3 custom-control custom-checkbox">
+                            <input class="custom-control-input" type="checkbox" id="@checkBoxId" name="SelectedSatuses" value="@status.Id">
+                            <label for="@checkBoxId" class="custom-control-label">@status.Status</label>
+                        </div>
+                    }
+                </div>
+
+                <div class="row">
+                    <input type="submit" value="Export" class=" btn btn-success">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //Initialize Select2 Elements
+        $('.select2').select2()
+
+        //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        })
+    });
+</script>

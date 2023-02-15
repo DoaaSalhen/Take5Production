@@ -1,0 +1,992 @@
+﻿@model Take5.Services.Models.MasterModels.SearchTripModel
+
+@{
+    ViewData["Title"] = "SearchTrip";
+    string checkBoxId = "";
+    string cancelBtnId = "";
+    string rowId = "";
+}
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal({
+                title: "Success!",
+                text: message,
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal({
+                title: "Failed Process!",
+                text: error,
+                icon: "error",
+            });
+        }
+    }
+</script>
+<style>
+    .badge, .data {
+        font-size: 10px;
+        font-weight: 800;
+    }
+</style>
+@if (TempData["Message"] != null)
+{
+    <input type="hidden" id="message" value="@TempData["Message"]" />
+    <script>
+        showAlert("Message");
+    </script>
+}
+else if (TempData["Error"] != null)
+{
+    <input type="hidden" id="error" value="@TempData["Error"]" />
+    <script>
+        showAlert("Error");
+    </script>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+            </div><!-- /.col -->
+            <!--<div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#"> Home </a></li>
+                    <li class="breadcrumb-item active">Dashboard v1</li>
+                </ol>
+            </div>-->
+            <!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+</div>
+<div>
+    <div class="card card-default">
+        <div class="card-header">
+            <h3 class="card-title">Search Trip</h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+            <form asp-action="SearchTrip">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Trip Number</label>
+                            <input class="form-control" asp-for="TripId" style="width: 100%;" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Jobsite</label>
+                            <select class="form-control select2bs4" style="width: 100%;" asp-for="JobSiteId" asp-items="@(new SelectList(Model.JobSites, "Id", "Name"))">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Date From</label>
+                            <input class="form-control" asp-for="TripDateFrom" style="width: 100%;" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Date To</label>
+                            <input class="form-control" asp-for="TripDateTo" style="width: 100%;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Driver</label>
+                            <select class="form-control select2bs4" style="width: 100%;" asp-for="DriverId" asp-items="@(new SelectList(Model.Drivers, "Id", "FullName"))">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 ">
+                        <div class="form-group">
+                            <label>Truck</label>
+                            <select class="form-control select2bs4" style="width: 100%;" asp-for="TruckId" asp-items="@(new SelectList(Model.Trucks, "Id", "Id"))">
+                                <option value="-1" selected="selected"> Select Truck</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mt-5">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input custom-control-input-danger" type="checkbox" id="customCheckbox4" asp-for="IsTripConverted">
+                            <label class="custom-control-label" for="customCheckbox4">
+                                Converted
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mt-5">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input custom-control-input-danger" type="checkbox" id="customCheckbox5" asp-for="IsTripCancelled">
+                            <label class="custom-control-label" for="customCheckbox5">
+                                Cancelled
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mt-5">
+                        <div class="custom-control custom-checkbox">
+                            <input class="custom-control-input custom-control-input-danger" type="checkbox" id="customCheckbox3" asp-for="IsTripOffline">
+                            <label class="custom-control-label" for="customCheckbox3">
+                                Offline
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row mt-3">
+                    <label style="text-decoration:underline">Trip Status</label>
+                </div>
+                <div class="row mt-3">
+
+                    @foreach (var status in Model.tripStatusModels)
+                    {
+                        checkBoxId = "checkBoxId" + status.Id;
+                        <div class="col-lg-3 custom-control custom-checkbox">
+                            <input class="custom-control-input" type="checkbox" id="@checkBoxId" name="SelectedSatuses" value="@status.Id">
+                            <label for="@checkBoxId" class="custom-control-label">@status.Status</label>
+                        </div>
+                    }
+                </div>
+                <div class="row">
+                    <input type="submit" value="Search" class=" btn btn-primary">
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>SearchTrip</h4>
+            </div>
+            <div class="card-body">
+                @if (Model.tripJobsiteModels != null)
+                {
+                    <table id="example1" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    TripNumber
+                                </th>
+                                @*<th>
+                                        Trip Date
+                                    </th>*@
+                                <th>
+                                    JobSite
+                                </th>
+                                <th>
+                                    Driver
+                                </th>
+                                @*<th>
+                                        Truck
+                                    </th>*@
+
+                                <th>
+                                    Status
+                                </th>
+                                <th>Actions</th>
+                                @*<th>Cancel</th>*@
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.tripJobsiteModels)
+                            {
+                                rowId = "trip" + item.TripId;
+                                cancelBtnId = "cancelBtn" + item.TripId;
+                                <tr id="@rowId">
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Trip.Id)
+                                        <input id="tripId" type="hidden"/>
+                                    </td>
+                                    @*<td>
+                                            @Html.DisplayFor(modelItem => item.Trip.TripDate)
+                                        </td>*@
+                                    <td>
+                                        <p class="data">@item.JobSite.Name</p>
+                                    </td>
+                                    <td>
+                                        <p class="data">@item.Trip.Driver.FullName</p>
+                                    </td>
+                                    <td>
+                                        @if (item.TripStatusText == "Pending")
+                                        {
+                                            <h5 class="badge badge-info">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "Started")
+                                        {
+                                            <h5 class="badge badge-warning">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "DestinationArrived")
+                                        {
+                                            <h5 class="badge badge-success">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "SurveyStepOneCompleted")
+                                        {
+                                            <h5 class="badge badge-primary">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "StepTwoRequested")
+                                        {
+                                            <h5 class="badge badge-danger">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "StepTwoResponsed")
+                                        {
+                                            <h5 class="badge bg-purple">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "SurveyStepTwoCompleted")
+                                        {
+                                            <h5 class="badge badge-primary">@item.TripStatusText</h5>
+                                        }
+                                        else if (item.TripStatusText == "TripCompleted")
+                                        {
+                                            <h5 class="badge badge-success">@item.TripStatusText</h5>
+
+                                        }
+                                        else
+                                        {
+                                            @Html.DisplayFor(modelItem => item.TripStatusText)
+                                        }
+                                    </td>
+                                    @*<td>
+                                            @Html.DisplayFor(modelItem => item.Trip.Truck.Id)
+                                        </td>*@
+
+                                    @*<td>*@
+                                    @*<a asp-action="ShowSurveyForTrip" asp-controller="Survey" asp-route-tripNumber="@item.TripId" asp-route-jobsiteId="@item.JobSiteId">Show</a>*@
+                                    @*</td>*@
+                                    <td class="btn-group btn-group-sm">
+                                        <a class="btn bg-gradient-purple" asp-action="ShowSurveyForTrip" asp-controller="Survey" asp-route-tripNumber="@item.TripId" asp-route-jobsiteId="@item.JobSiteId" title="Show Take5"><i class="fa fa-file-pdf"></i></a>
+                                        <button class="btn btn-primary" asp-action="Details" onclick="getTripDetails(@item.TripId, @item.JobSiteId)" title="Show Details">
+                                            <i class="fa fa-eye">
+                                            </i>
+                                        </button>
+                                        @if (item.TripStatus != (int)CommanData.TripStatus.TripCompleted && item.Trip.Cancelled != true)
+                                        {
+                                            <a class="btn btn-info" asp-action="Edit" asp-route-TripNumber="@item.TripId" title="Edit">
+                                                <i class="fas fa-pen">
+                                                </i>
+                                            </a>
+                                            @if (item.TripStatus == (int)CommanData.TripStatus.Pending)
+                                            {
+                                                <a class="btn btn-danger" onclick="DeleteTrip(@item.TripId)" title="Delete">
+                                                    <i class="fas fa-trash">
+                                                    </i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a role="link" class="btn btn-danger" onclick="alert('Can not delete trip after starting')" title="Delete">
+                                                    <i class="fas fa-trash">
+                                                    </i>
+                                                </a>
+                                            }
+                                            @if (item.TripStatus == (int)CommanData.TripStatus.Pending || item.TripStatus >= (int)CommanData.TripStatus.SurveyStepOneCompleted)
+                                            {
+                                                <a class="btn btn-success" role="link" onclick="alert('Can not convert trip at this stage')" title="Transform">
+                                                    <i class="fas  fa-arrow-right">
+                                                    </i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn btn-success" asp-action="ConvertTrip" asp-route-TripNumber="@item.TripId" asp-route-jobsiteId="@item.JobSiteId" title="Transform">
+                                                    <i class="fas fa-arrow-right">
+                                                    </i>
+                                                </a>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-info" onclick="alert('can not edit trip after completion or Cancellation')" title="Edit">
+                                                <i class="fas fa-pen">
+                                                </i>
+                                            </a>
+
+                                            <a role="link" class="btn btn-danger" onclick="alert('Can not delete trip after completion or Cancellation')" title="Delete">
+                                                <i class="fas fa-trash">
+                                                </i>
+                                            </a>
+
+                                            <a class="btn btn-success" role="link" onclick="alert('Can not convert trip after completion or Cancellation')" title="Transform">
+                                                <i class="fas  fa-arrow-right">
+                                                </i>
+                                            </a>
+                                        }
+                                        @if (item.Trip.TripStatus == (int)CommanData.TripStatus.Pending)
+                                        {
+                                            <a class="btn btn-danger" onclick="alert('can not cancel pending trip')" title="can not cancel pending trip">
+                                                <i class="fas fa-minus">
+                                                </i>
+                                            </a>
+                                        }
+                                        else if (item.Trip.Cancelled != true)
+                                        {
+                                            if (item.TripStatus != (int)CommanData.TripStatus.TripCompleted)
+                                            {
+                                                <a class="btn btn-warning" onclick="ShowCancelPopup(@item.TripId)" title="Cancel" id=@cancelBtnId>
+                                                    <i class="fas fa-lock">
+                                                    </i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn bg-blue" onclick="alert('can not cancel Completed trip')" title="can not cancel Completed trip">
+                                                    <i class="fas fa-minus">
+                                                    </i>
+                                                </a>
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-warning" onclick="alert('can not cancel this trip')" title="Cancelled">
+                                                <b>C</b>
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <h2>There Is No Trips</h2>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<div class="modal fade" id="tripSearchModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="requestModalLabel">Trip Details</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearSearchElements()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col col-lg-12 mb-2 mb-lg-0">
+                        <div class="card mb-1" style="border-radius: .5rem; padding:10px">
+                            <div class="card-header p-2">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item"><a class="nav-link active" href="#info" data-toggle="tab">Trip info.</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#timeline" data-toggle="tab">TimeLine</a></li>
+                                </ul>
+                            </div><!-- /.card-header -->
+<!--<div class="card-body p-1">
+    <div class="tab-content">
+        <div class="active tab-pane" id="info">
+            <h6>Trip Information</h6>
+            <hr class="mt-0 mb-1">
+            <div class="row pt-1">
+                <strong style="text-decoration:underline; display:block"><i class="fas fa-book mr-1"></i>Trip</strong>
+                <br />
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Number:-</label>
+                    <label class="text-muted" id="SearchTripNumber"></label>
+                </div>
+
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Trip Status:-</label>
+                    <label class="text-muted" id="SearchTripStatus"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-6 mb-1">
+                    <label class="control-label model-label">Take5 Status:-</label>
+                    <label class="text-muted" id="SearchTake5Status"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Cancelled:-</label>
+                    <label class="text-muted" id="SearchTripActive"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Converted</label>
+                    <label class="text-muted" id="SearchTripConverted"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Truck Number</label>
+                    <label class="text-muted" id="SearchTruckNumber"></label>
+                </div>
+
+            </div>
+            <div class="row pt-1">
+                <div class="col-6 mb-1">
+                    <label class="control-label model-label">Trip Date</label>
+                    <label class="text-muted" id="SearchTripDate"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <strong style="text-decoration:underline"><i class="fas fa-landmark mr-1"></i>Jobsite</strong>
+                <br />
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Number:-</label>
+                    <label class="text-muted" id="SearchJobsiteNumber"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Name</label>
+                    <label class="text-muted" id="SearchJobsiteName"></label>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <strong style="text-decoration:underline"><i class="fas fa-user mr-1"></i>Driver</strong>
+                <br />
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Number:-</label>
+                    <label class="text-muted" id="SearchDriverNumber"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Name:-</label>
+                    <label class="text-muted" id="SearchDriverName"></label>
+                </div>
+                <div class="col-lg-6 mb-1">
+                    <label class="control-label model-label">Phone:-</label>
+                    <label class="text-muted" id="SearchDriverPhone"></label>
+                </div>
+            </div>
+
+            <div class="row pt-1" style="display:none" id="SearchRequestData">
+                <strong style="text-decoration:underline; display:block"><i class="fas fa-close mr-1"></i>Request Details</strong>
+                <br />
+                <div class="col-lg-8 mb-1" id="SearchrequestDateDiv">
+                    <label class="control-label model-label">Request Date</label>
+                    <label class="text-muted" id="RequestDate"></label>
+                </div>
+                <div class="col-lg-8 mb-1" id="SearchrequestStatusDiv">
+                    <label class="control-label model-label">Request Status</label>
+                    <label class="text-muted" id="SearchRequestStatus"></label>
+                </div>
+                <div class="col-lg-8 mb-1" id="SearchrequestWhoApprovedDiv" style="display:none">
+                    <label class="control-label model-label">Who Approved</label>
+                    <label class="text-muted" id="SearchRequestWhoApproved"></label>
+                </div>
+                <div class="col-lg-8 mb-1" id="SearchresponseDateDiv" style="display:none">
+                    <label class="control-label model-label">Response Date</label>
+                    <label class="text-muted" id="SearchresponseDate"></label>
+                </div>
+            </div>
+
+            <div class="row pt-1" style="display:none" id="SearchcancellationData">
+                <strong style="text-decoration:underline; display:block"><i class="fas fa-close mr-1"></i>Cancellation</strong>
+                <hr />
+                <div class="col-lg-8 mb-1">
+                    <label class="control-label model-label">Employee:-</label>
+                    <label class="text-muted" id="SearchCancelEmployeeName"></label>
+                </div>
+                <div class="col-lg-8 mb-1">
+                    <label class="control-label model-label">Date</label>
+                    <label class="text-muted" id="SearchCancelDate"></label>
+                </div>
+                <div class="col-lg-12 mb-1">
+                    <label class="control-label model-label">Reason</label>
+                    <p class="text-muted" id="SearchCancelReason"></p>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="timeline">
+
+            <div class="row pt-1">
+                <div class="col-lg-12">
+                    <h3>TimeLine</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">-->
+<!-- The time line -->
+<!--<div class="timeline" id="SearchTripTimeline">-->
+<!-- timeline time label -->
+<!--<div class="time-label">
+    <span class="bg-red" id="SearchTimelineTripId"></span>
+</div>-->
+<!-- /.timeline-label -->
+<!-- timeline item -->
+<!--<div>
+    <i class="fas fa-truck-moving bg-red"></i>
+    <div class="timeline-item">-->
+@*<span class="time"><i class="fas fa-clock"></i> 12:05</span>*@
+@*<h3 class="timeline-header" style="color: dodgerblue; font-weight: bold">Assign</h3>
+                    <div class="timeline-body" id="SearchTimelineTripAssign">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>*@
+<!-- /.col -->
+<!--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="clearSearchElements()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+<div class="modal fade" id="cancelModal" tabindex="-1" role="dialog" aria-labelledby="requestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestModalLabel">Cancel Trip</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="clearElements()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col col-lg-12 mb-2 mb-lg-0">
+                        <div class="card mb-1" style="border-radius: .5rem; padding:10px">
+                            <div class="card-body p-1">
+                                <div class="row pt-1">
+                                    <div class="col-md-3 mb-1">
+                                        <label class="control-label model-label">Reason <span style="color:red">*</span></label>
+                                    </div>
+                                    <div class="col-md-9 mb-1">
+                                        <input type="hidden" class="text-muted" id="cancelTripId" />
+                                        <textarea class="text-muted" id="reasonId" style="width:300px; height:75px" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="cancelTrip()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/JQuery/jquery.timeago.js"></script>
+
+<script>
+    function DeleteTrip(tripId)
+    {
+        swal({
+            title: "Are you sure?",
+            text: "Are you sure to delete this trip!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+                if (willDelete)
+                {
+                    var url = '@Url.Content("~/")' + "Take5/Trip/Delete";
+                    $.getJSON(url, { id: tripId }, function (data) {
+                        if (data == true) {
+                            var xx = "trip" + tripId;
+                            alert(xx);
+                            var tr = document.getElementById(xx);
+                            alert(tr);
+                             tr.style.display = 'none';
+                            swal("Success Process! trip has been deleted!", {
+                                icon: "success",
+                            });
+                        }
+                        else
+                        {
+                            swal("Failed Process, trip can not be deleted!", {
+                                icon: "Error",
+                            });
+                        }
+                    });
+                }
+
+            });
+    }
+
+    function ShowCancelPopup(tripId) {
+        document.getElementById("cancelTripId").value = tripId;
+        document.getElementById("tripId").value = tripId;
+        $('#cancelModal').modal('show');
+    }
+
+        function cancelTrip()
+        {
+            var Canceldata =
+            {
+                TripId: document.getElementById("cancelTripId").value,
+                Reason: document.getElementById("reasonId").value,
+            }
+            $.ajax({
+                url: '@Url.Content("~/")' + "Take5/Trip/CancelTripById",
+                data: Canceldata,
+                type: "POST",
+                async: false,
+                success: function (data)
+                {
+                    swal("Success Process! Trip has been Cancelled!", {
+                        icon: "success",
+                    });
+                    var str = "cancelBtn" + document.getElementById("tripId").value;
+                    document.getElementById(str).innerHTML = "<b>C</b>";
+                    document.getElementById(str).setAttribute("onclick", 'alert("Trip already cancelled")');
+                },
+                error: function ()
+                {
+                    swal("Failed process, Problem in  trip Cancellation",
+                        {
+                        icon: "error",
+                        });
+                }
+
+            });
+            $('#cancelModal').modal('toggle');
+            document.getElementById("reasonId").value = "";
+        }
+
+
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".timeago").timeago();
+        $("#prog_date").text($.timeago(new Date()));
+
+    });
+
+    //$(function () {
+    //    $("#example1").DataTable({
+    //        "responsive": true, "lengthChange": false, "autoWidth": false
+    //    });
+    //        //"buttons": ["excel", "pdf", "print", "colvis"]}).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    //    $('#example2').DataTable({
+    //        "paging": true,
+    //        "lengthChange": false,
+    //        "searching": true,
+    //        "ordering": true,
+    //        "info": true,
+    //        "autoWidth": false,
+    //        "responsive": true,
+    //    });
+    //});
+
+     @*function getSearchTripDetails(id, jobSiteId)
+        {
+         var url = '@Url.Content("~/")' + "Take5/Trip/getTripDetails";
+                $.getJSON(url, { tripId: id, jobSiteId: jobSiteId }, function (data) {
+                    if (data != null)
+                    {
+                        document.getElementById("SearchTripNumber").innerText =    data["Trip"]["Id"];
+                        document.getElementById("SearchTruckNumber").innerText =   data["Trip"]["TruckId"];
+                        document.getElementById("SearchJobsiteNumber").innerText = data["JobSite"]["Id"];
+                        document.getElementById("SearchJobsiteName").innerText =   data["JobSite"]["Name"];
+                        document.getElementById("SearchDriverNumber").innerText =  data.Trip.Driver["Id"];
+                        document.getElementById("SearchDriverName").innerText =    data.Trip.Driver["FullName"];
+                        document.getElementById("SearchDriverPhone").innerText = data.Trip.Driver["PhoneNumber"];
+                        document.getElementById("SearchTripDate").innerText = data["TripDateText"] ;
+                        document.getElementById("SearchTripConverted").innerText = data["Converted"];
+                        document.getElementById("SearchTripStatus").innerText =    data["TripStatusText"];
+                        document.getElementById("SearchTake5Status").innerText =   data["Take5StatusText"];
+                        document.getElementById("SearchTripActive").innerText =    data["IsVisible"];
+                        document.getElementById("SearchTimelineTripId").innerText = "Trip Number " + data["Trip"]["Id"];
+                        document.getElementById("SearchTimelineTripAssign").innerText = data["CreatedDateText"];
+                        if (data['TripCancellationModel'] != null)
+                        {
+                            document.getElementById("SearchCancelEmployeeName").innerText = data["TripCancellationModel"]["EmployeeName"];
+                            document.getElementById("SearchCancelDate").innerText = data["TripCancellationModel"]["CreatedDate"];
+                            document.getElementById("SearchCancelReason").innerText = data["TripCancellationModel"]["Reason"];
+                            document.getElementById("SearchcancellationData").style.display = '';
+                        }
+                        if (data["StageTwoRequestDate"] != null) {
+                            document.getElementById("SearchRequestDate").innerText = data["StageTwoRequestDate"];
+                            document.getElementById("SearchRequestStatus").innerText = data["RequestStatusName"];
+                            if (data["RequestResponsedByName"] != null)
+                            {
+                                document.getElementById("SearchRequestWhoApproved").innerText = data["RequestResponsedByName"];
+                                document.getElementById("SearchrequestWhoApprovedDiv").style.display = '';
+
+                                document.getElementById("SearchresponseDate").innerText = data["StageTwoResponseDateText"];
+                                document.getElementById("SearchresponseDateDiv").style.display = '';
+                            }
+                            document.getElementById("SearchRequestData").style.display = '';
+                        }
+                        if (data["StartingDate"] != null && data["TripStatusText"] != "") {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-green");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Starting";
+                            var statingTimeSpan = document.createElement("span");
+                            statingTimeSpan.innerText = data["StartingDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'>";
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(statingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["DestinationArrivingDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-yellow");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Destination Arrivial";
+                            var DestinationArrivingTimeSpan = document.createElement("span");
+                            DestinationArrivingTimeSpan.innerText = data["DestinationArrivingDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(DestinationArrivingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageOneComplatedTime"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step One Completion";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageOneComplatedTimeText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoRequestDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Request";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoRequestDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoResponseDate"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Response";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoResponseDateText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["StageTwoComplatedTime"] != null) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "fas fa-location-arrow bg-blue");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var span = document.createElement("span");
+                            span.setAttribute("class", "time");
+                            var ii = document.createElement("i");
+                            //ii.setAttribute("class", "fas fa-clock");
+                            //span.innerText = "test";
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Take5 Step Two Completion";
+                            var startingTimeSpan = document.createElement("span");
+                            startingTimeSpan.innerText = data["StageTwoComplatedTimeText"];
+                            //span.innerHTML = "<i class='fas fa-clock'></i>" + "Date";
+                            timelineBodyDiv.appendChild(h6);
+                            timelineBodyDiv.appendChild(startingTimeSpan);
+                            divTimelineItem.append(span);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        if (data["TripStatusText"] == "TripCompleted")
+                        {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "far fa-clock bg-gray");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:dodgerblue; font-weight:bold");
+                            h6.innerText = "Trip Completed";
+                            timelineBodyDiv.appendChild(h6);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        else if (data["Trip"]["Cancelled"] == true) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "far fa-clock bg-gray");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:red; font-weight:bold");
+                            h6.innerText = "Trip Cancelled";
+                            timelineBodyDiv.appendChild(h6);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                        else if (data["Converted"] == true) {
+                            var div = document.createElement("div");
+                            div.setAttribute("class", "TimeInfo");
+                            var i = document.createElement("i");
+                            i.setAttribute("class", "far fa-clock bg-gray");
+                            var divTimelineItem = document.createElement("div");
+                            divTimelineItem.setAttribute("class", "timeline-item");
+                            var timelineBodyDiv = document.createElement("div");
+                            timelineBodyDiv.setAttribute("class", "timeline-body");
+                            var h6 = document.createElement("h6");
+                            h6.setAttribute("style", "color:green; font-weight:bold");
+                            h6.innerText = "Trip Converted";
+                            timelineBodyDiv.appendChild(h6);
+                            divTimelineItem.append(timelineBodyDiv);
+                            div.appendChild(i);
+                            div.append(divTimelineItem);
+                            var mainDiv = document.getElementById("TripTimeline");
+                            mainDiv.appendChild(div);
+                        }
+                    }
+                    else
+                    {
+
+                    }
+                });
+         $('#tripSearchModal').modal('show');
+
+    }*@
+    //function clearSearchElements() {
+    //    $(".TimeInfo").remove();
+    //    document.getElementById("cancellationData").style.display = 'none';
+    //    document.getElementById("requestWhoApprovedDiv").style.display = 'none';
+    //    document.getElementById("responseDateDiv").style.display = 'none';
+    //    document.getElementById("requestData").style.display = 'none';
+    //}
+</script>
+<script>
+    $(function () {
+        //Initialize Select2 Elements
+        $('.select2').select2()
+
+        //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        })
+    });
+</script>

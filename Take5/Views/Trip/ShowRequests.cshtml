@@ -1,0 +1,134 @@
+﻿@model IEnumerable<Take5.Services.Models.MasterModels.StepTwoRequestModel>
+
+@{
+    ViewData["Title"] = "ShowRequests";
+    string approveButtonId = "";
+}
+
+<h1>ShowRequests</h1>
+
+@if (Model.Any() == true)
+{
+    <table id="example1" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.TripId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.JobsiteId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.JobsiteName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DriverName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DriverId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DestinationArrivingDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.StageOneComplatedTime)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.StageTwoRequestDate)
+                </th>
+                <td>
+                    Warning
+                </td>
+                <td></td>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                approveButtonId = "AprroveButton" + item.TripId;
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TripId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.JobsiteId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.JobsiteName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DriverName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DriverId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DestinationArrivingDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StageOneComplatedTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StageTwoRequestDate)
+                </td>
+
+                <td>
+                    <small class="badge badge-warning" data-toggle="tooltip" data-placement="bottom" title="@item.WarningMessage">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </small>
+                </td>
+                <td>
+                <td id=@approveButtonId>
+                    @if (item.TripStatusName == "Pending")
+                    {
+                        <button class="btn btn-success" onclick="approveStep2Request(@item.TripId, @item.JobsiteId)">Approve</button>
+                    }
+                    else
+                    {
+                        <b style='color:green'> @item.TripStatusName </b>
+                    }
+                    @if (item.WarningMessage != null)
+                    {
+                        <small class="badge badge-warning" data-toggle="tooltip" data-placement="bottom" title="@item.WarningMessage">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </small>
+                    }
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+
+}
+else
+{
+    <h1>No Requests</h1>
+}
+
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script>
+   function approveStep2Request(tripNumber, jobsiteNumber)
+    {
+        alert(tripNumber);
+        alert(jobsiteNumber);
+       var url = '@Url.Content("~/")' + "Take5/Trip/ApproveStepTwoRequest";
+        $.getJSON(url, { tripNumber: tripNumber, jobsiteNumber: jobsiteNumber }, function (data) {
+            alert(data);
+            if (!data.includes('Failed'))
+            {
+                alert("AprroveButton" + tripNumber);
+                document.getElementById("AprroveButton" + tripNumber).innerHTML = "<b style ='color:green'> Approved </b>";
+                swal("Success Process! Request has been approved!", {
+                    icon: "success",
+                });
+            }
+            else
+            {
+                swal("Failed Process", {
+                    icon: "Error",
+                });
+            }
+        });
+    }
+</script>

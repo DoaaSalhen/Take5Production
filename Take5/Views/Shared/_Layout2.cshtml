@@ -1,0 +1,325 @@
+﻿@inject UserManager<AspNetUser> userManager
+@inject SignInManager<AspNetUser> SignInManager
+@inject Take5.Services.Contracts.IUserNotificationService _userNotificationService
+@{
+        var user = await userManager.GetUserAsync(User);
+        var displayName = user.UserName;
+        var roles = await userManager.GetRolesAsync(user);
+        var notifications = @_userNotificationService.GetUserNotification(user.Id);
+        int NotificationCount = 0;
+        var hasRequests = false;
+        int PendingRequestsCount = 0;
+        if (notifications != null)
+        {
+            NotificationCount = notifications.Where(n => n.Seen == false).Count();
+            notifications = notifications.Take(50).OrderByDescending(n => n.CreatedDate).ToList();
+        }
+    }
+@if (SignInManager.IsSignedIn(User))
+{
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Focus - Bootstrap Admin Dashboard </title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="~/Focus/images/favicon.png">
+    <link rel="stylesheet" href="~/Focus/vendor/owl-carousel/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/Focus/vendor/owl-carousel/css/owl.theme.default.min.css">
+    <link href="~/Focus/vendor/jqvmap/css/jqvmap.min.css" rel="stylesheet">
+    <link href="~/Focus/css/style.css" rel="stylesheet">
+    <link href="~/Focus/vendor/datatables/css/jquery.dataTables.min.css" rel="stylesheet">
+
+
+
+</head>
+
+<body>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header">
+            <a href="index.html" class="brand-logo">
+                <img class="logo-abbr" src="~/Focus/images/logo.png" alt="">
+                <img class="logo-compact" src="~/Focus/images/logo-text.png" alt="">
+                <img class="brand-title" src="~/Focus/images/logo-text.png" alt="">
+            </a>
+
+            <div class="nav-control">
+                <div class="hamburger">
+                    <span class="line"></span><span class="line"></span><span class="line"></span>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+        <!--**********************************
+            Header start
+        ***********************************-->
+        <div class="header">
+            <div class="header-content">
+                <nav class="navbar navbar-expand">
+                    <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+                            <div class="search_bar dropdown">
+                                <span class="search_icon p-3 c-pointer" data-toggle="dropdown">
+                                    <i class="mdi mdi-magnify"></i>
+                                </span>
+                                <div class="dropdown-menu p-0 m-0">
+                                    <form>
+                                        <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <audio id="myAudio" controls hidden>
+                            <source src="~/sound/mixkit-positive-notification-951.wav" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio><br>
+                        <input type="hidden" id="userId" value="@user.Id" />
+                        <ul class="navbar-nav header-right">
+                            <li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link" href="#" role="button" data-toggle="dropdown">
+                                    <i class="mdi mdi-bell"></i>
+                                    <span class="badge badge-circle badge-danger" id="notificationCount">@NotificationCount</span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <ul class="list-unstyled" id="notificationList">
+                                        @if (notifications.Count > 0)
+                                        {
+                                            @foreach (var notification in notifications)
+                                            {
+                                                <li class="dropdown-item" style="padding-top:10px">
+                                                    <div class="row">
+                                                        <i class="ti-user text-success col-lg-2 mt-5" style="font-size:x-large"></i>
+                                                        <div class="col-lg-10">
+                                                            <h6>@notification.Notification.NotificationType.Name</h6>
+                                                            <p style="font-size:small">
+                                                                <a href="#">
+                                                                    <span>@notification.Notification.Message</span>
+                                                                </a>
+                                                            </p>
+                                                            <div><span>@notification.Notification.CreatedDate.ToString("yyyy-mm-dd"), @notification.Notification.CreatedDate.ToString("hh-MM-ss") </span></div>
+
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                <hr />
+                                            }
+                                        }
+                                    </ul>
+                                    <a class="all-notification" href="#">
+                                        See all notifications <i class="ti-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown header-profile">
+                                <a class="nav-link" href="#" role="button" data-toggle="dropdown">
+                                    <i class="mdi mdi-account"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a href="~/Focus/app-profile.html" class="dropdown-item">
+                                        <i class="icon-user"></i>
+                                        <span class="ml-2">Profile </span>
+                                    </a>
+                                    <a href="~/Focus/email-inbox.html" class="dropdown-item">
+                                        <i class="icon-envelope-open"></i>
+                                        <span class="ml-2">Inbox </span>
+                                    </a>
+                                    <a href="~/Focus/page-login.html" class="dropdown-item">
+                                        <i class="icon-key"></i>
+                                        <span class="ml-2">Logout </span>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!--**********************************
+            Header end ti-comment-alt
+        ***********************************-->
+        <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <div class="quixnav">
+            <div class="quixnav-scroll">
+                <ul class="metismenu" id="menu">
+                    <li class="nav-label first">Main Menu</li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-single-04"></i><span class="nav-text">Dashboard</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a href="~/Focus/index.html">Dashboard 1</a></li>
+                            <li><a href="~/Focus/index2.html">Dashboard 2</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-label">Master Data</li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-app-store"></i><span class="nav-text">Questions</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a asp-controller="Question" asp-action="Create">Create</a></li>
+                            <li><a asp-controller="Question" asp-action="Index">Show</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-app-store"></i><span class="nav-text">Dangers</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a asp-controller="Danger" asp-action="CreateGet">Create</a></li>
+                            <li><a asp-controller="Danger" asp-action="Index">Show</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-app-store"></i><span class="nav-text">Drivers</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a asp-controller="Driver" asp-action="Create">Create</a></li>
+                            <li><a asp-controller="Driver" asp-action="Index">Show</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-app-store"></i><span class="nav-text">Trucks</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a asp-controller="Truck" asp-action="Create">Create</a></li>
+                            <li><a asp-controller="Truck" asp-action="Index">Show</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-app-store"></i><span class="nav-text">Jobsite</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a asp-controller="Jobsite" asp-action="Create">Create</a></li>
+                            <li><a asp-controller="Jobsite" asp-action="Index">Show</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="has-arrow" href="javascript:void()" aria-expanded="false">
+                            <i class="icon icon-app-store"></i><span class="nav-text">Employee</span>
+                        </a>
+                        <ul aria-expanded="false">
+                            <li><a asp-controller="Employee" asp-action="Create">Create</a></li>
+                            <li><a asp-controller="Employee" asp-action="Index">Show</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+
+        </div>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body">
+            <!-- row -->
+            <div class="container-fluid">
+
+                @RenderBody()
+            </div>
+        </div>
+        <!--**********************************
+            Content body end
+        ***********************************-->
+        <!--**********************************
+            Footer start
+        ***********************************-->
+        <div class="footer">
+            <div class="copyright">
+                <p>Copyright © Designed &amp; Developed by <a href="#" target="_blank">Quixkit</a> 2019</p>
+                <p>Distributed by <a href="https://themewagon.com/" target="_blank">Themewagon</a></p>
+            </div>
+        </div>
+        <!--**********************************
+            Footer end
+        ***********************************-->
+        <!--**********************************
+           Support ticket button start
+        ***********************************-->
+        <!--**********************************
+           Support ticket button end
+        ***********************************-->
+
+
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="~/js/JQuery/jquery-3.5.1.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+    <script src="~/Focus/vendor/global/global.min.js"></script>
+    <script src="~/Focus/js/quixnav-init.js"></script>
+    <script src="~/Focus/js/custom.min.js"></script>
+
+
+    <!-- Vectormap -->
+    <script src="~/Focus/vendor/raphael/raphael.min.js"></script>
+    <script src="~/Focus/vendor/morris/morris.min.js"></script>
+
+
+    <script src="~/Focus/vendor/circle-progress/circle-progress.min.js"></script>
+    <script src="~/Focus/vendor/chart.js/Chart.bundle.min.js"></script>
+
+    <script src="~/Focus/vendor/gaugeJS/dist/gauge.min.js"></script>
+
+    <!--  flot-chart js -->
+    <script src="~/Focus/vendor/flot/jquery.flot.js"></script>
+    <script src="~/Focus/vendor/flot/jquery.flot.resize.js"></script>
+
+    <!-- Owl Carousel -->
+    <script src="~/Focus/vendor/owl-carousel/js/owl.carousel.min.js"></script>
+
+    <!-- Counter Up -->
+    <script src="~/js/JQuery/jquery-3.5.1.js"></script>
+    <script src="~/Focus/vendor/jqvmap/js/jquery.vmap.min.js"></script>
+    <script src="~/Focus/vendor/jqvmap/js/jquery.vmap.usa.js"></script>
+    <script src="~/Focus/vendor/jquery.counterup/jquery.counterup.min.js"></script>
+    <script src="~/Focus/js/dashboard/dashboard-1.js"></script>
+    <script src="~/Focus/vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/Focus/js/plugins-init/datatables.init.js"></script>
+    <script src="~/lib/aspnet/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/site.js"></script>
+</body>
+
+@RenderSection("Scripts", required: false)
+</html>
+}
