@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Take5.Core;
 using Take5.Models;
 using Take5.Models.Models;
 using Take5.Models.Models.MasterModels;
@@ -331,51 +332,58 @@ namespace Take5.APIController
                 string message;
                 bool result;
                 string requestStatus = "";
-                AspNetUser user = _userManager.FindByIdAsync(model.UserId).Result;
-                if (user != null)
+                if (StringExtensions.IsValid(model.TruckNumber))
                 {
-                    TripJobsiteModel tripJobsiteModel = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteIdForAPI(model.TripId, model.JobsiteId);
-                    if (tripJobsiteModel != null)
+                    AspNetUser user = _userManager.FindByIdAsync(model.UserId).Result;
+                    if (user != null)
                     {
-                        if ((tripJobsiteModel.Trip.Driver.UserId == model.UserId && tripJobsiteModel.Trip.TruckId == model.TruckNumber) 
-                            && (tripJobsiteModel.Trip.Cancelled != true) && 
-                            (tripJobsiteModel.Converted != true))
+                        TripJobsiteModel tripJobsiteModel = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteIdForAPI(model.TripId, model.JobsiteId);
+                        if (tripJobsiteModel != null)
                         {
-                            if (tripJobsiteModel.Trip.TripStatus >= (int)CommanData.TripStatus.StepTwoRequested)
+                            if ((tripJobsiteModel.Trip.Driver.UserId == model.UserId && tripJobsiteModel.Trip.TruckId == model.TruckNumber)
+                                && (tripJobsiteModel.Trip.Cancelled != true) &&
+                                (tripJobsiteModel.Converted != true))
                             {
-                                string status = Enum.GetName(typeof(CommanData.RequestStatus), tripJobsiteModel.RequestStatus);
-                                if (status == "Pending")
+                                if (tripJobsiteModel.Trip.TripStatus >= (int)CommanData.TripStatus.StepTwoRequested)
                                 {
-                                    message = "Request not Apprroved yet";
-                                    result = false;
-                                    requestStatus = "Pending";
+                                    string status = Enum.GetName(typeof(CommanData.RequestStatus), tripJobsiteModel.RequestStatus);
+                                    if (status == "Pending")
+                                    {
+                                        message = "Request not Apprroved yet";
+                                        result = false;
+                                        requestStatus = "Pending";
+                                    }
+                                    else
+                                    {
+                                        message = "Your Request is Apprroved";
+                                        result = true;
+                                        requestStatus = "Apprroved";
+                                    }
+                                    return Ok(new { Message = message, Data = requestStatus });
                                 }
                                 else
                                 {
-                                    message = "Your Request is Apprroved";
-                                    result = true;
-                                    requestStatus = "Apprroved";
+                                    return BadRequest(new { Message = "Failed Process, No Request Added yet", Data = false });
                                 }
-                                return Ok(new { Message = message, Data = requestStatus });
                             }
                             else
                             {
-                                return BadRequest(new { Message = "Failed Process, No Request Added yet", Data = false });
+                                return Ok(new { Message = "Trip has been Cancelled", Data = "Cancelled" });
                             }
                         }
                         else
                         {
-                            return Ok(new { Message = "Trip has been Cancelled", Data = "Cancelled" });
+                            return BadRequest(new { Message = "Failed Process, Wrong Trip Data", Data = false });
                         }
                     }
                     else
                     {
-                        return BadRequest(new { Message = "Failed Process, Wrong Trip Data", Data = false });
+                        return BadRequest(new { Message = "Failed Process, Invalid User data", Data = false });
                     }
                 }
                 else
                 {
-                    return BadRequest(new { Message = "Failed Process, Invalid User data", Data = false });
+                    return BadRequest(new {Message= "Failed Process, Invalid Truck Number", Data = false});
                 }
             }
             catch (Exception e)
@@ -665,155 +673,226 @@ namespace Take5.APIController
             string response = "Done";
             try
             {
-                AspNetUser user = _userManager.FindByIdAsync(model.UserId).Result;
-                if (user != null)
+                if (ObjectMapping.VaildateAllTripSteps(model))
                 {
-                    TripJobsiteModel tripJobsiteModel = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteIdForAPI(model.TripId, model.JobsiteId);
-                    if(tripJobsiteModel != null)
+                    AspNetUser user = _userManager.FindByIdAsync(model.UserId).Result;
+                    if (user != null)
                     {
-                       if(tripJobsiteModel.JobSite.HasNetworkCoverage == true)
+                        TripJobsiteModel tripJobsiteModel = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteIdForAPI(model.TripId, model.JobsiteId);
+                        if (tripJobsiteModel != null)
                         {
-                            if(tripJobsiteModel.Trip.Driver.UserId == model.UserId && tripJobsiteModel.Trip.TruckId == model.TruckNumber)
+                            if (tripJobsiteModel.JobSite.HasNetworkCoverage == true)
                             {
-                                if (tripJobsiteModel.Trip.Cancelled != true)
+                                if (tripJobsiteModel.Trip.Driver.UserId == model.UserId && tripJobsiteModel.Trip.TruckId == model.TruckNumber)
                                 {
-                                    if (tripJobsiteModel.Converted != true)
+                                    if (tripJobsiteModel.Trip.Cancelled != true)
                                     {
-                                        string LastTripStatus = Enum.GetName(typeof(CommanData.TripStatus), tripJobsiteModel.TripStatus);
-                                        int LastTripStatusNum = tripJobsiteModel.TripStatus;
-                                        int EndStatusNum = (int)(CommanData.TripStatus)Enum.Parse(typeof(CommanData.TripStatus), model.EndStatus);
-                                        if((LastTripStatusNum < EndStatusNum && result != false && LastTripStatus != "TripCompleted"))
+                                        if (tripJobsiteModel.Converted != true)
                                         {
-                                            while ((LastTripStatusNum < EndStatusNum && result != false && LastTripStatus != "TripCompleted"))
+                                            string LastTripStatus = Enum.GetName(typeof(CommanData.TripStatus), tripJobsiteModel.TripStatus);
+                                            int LastTripStatusNum = tripJobsiteModel.TripStatus;
+                                            int EndStatusNum = (int)(CommanData.TripStatus)Enum.Parse(typeof(CommanData.TripStatus), model.EndStatus);
+                                            if ((LastTripStatusNum < EndStatusNum && result != false && LastTripStatus != "TripCompleted"))
                                             {
-                                                if (LastTripStatus == "Started")
+                                                while ((LastTripStatusNum < EndStatusNum && result != false && LastTripStatus != "TripCompleted"))
                                                 {
-                                                    if (model.TripDestinationArrivedModel != null)
+                                                    if (LastTripStatus == "Started")
                                                     {
-                                                        result = await _tripJobsiteService.ArrivingTripJobsite(model.TripDestinationArrivedModel, model.TripId, model.JobsiteId);
-                                                        if (result != true)
+                                                        if (model.TripDestinationArrivedModel != null)
                                                         {
-                                                            message = "Failed Process, Can not update trip status at destination arrival status";
-                                                        }
-                                                        else
-                                                        {
-                                                            int notificationTypeId = (int)CommanData.NotificationTypes.DestinationArrived;
-                                                            string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " arrived his destination trip number " + tripJobsiteModel.TripId + "at" + model.TripDestinationArrivedModel.DestinationArrivedDate.ToString("yyy-MM-dd, HH:mm:ss");
-                                                            message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
-                                                            //_tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "DestinationArrived");
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        result = false;
-                                                        invalidObject = true;
-                                                    }
-                                                }
-                                                else if (LastTripStatus == "DestinationArrived")
-                                                {
-                                                    if (model.SurveyStepOneAnswersAPIModel != null)
-                                                    {
-                                                        result = _surveyService.AddAnswersToStepNQuestions(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId, (int)CommanData.SurveySteps.StepOne).Result;
-                                                        if (result == true)
-                                                        {
-                                                            if (model.SurveyStepOneAnswersAPIModel.DangerAPIs.Count > 0)
-                                                            {
-                                                                result = _surveyService.AddDangersToSurveyStepOne(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId).Result;
-                                                            }
-                                                            result = await _tripJobsiteService.UpdateStepOneCompletion(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId);
+                                                            result = await _tripJobsiteService.ArrivingTripJobsite(model.TripDestinationArrivedModel, model.TripId, model.JobsiteId);
                                                             if (result != true)
                                                             {
-                                                                result = _surveyService.DeleteTake5StepOneForTripJobsite(model.TripId, model.JobsiteId);
-                                                                message = "Failed Process, Can not add Stage one of survey";
+                                                                message = "Failed Process, Can not update trip status at destination arrival status";
                                                             }
                                                             else
                                                             {
-                                                                int notificationTypeId = (int)CommanData.NotificationTypes.StepOneCompleted;
-                                                                string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " completed step one of Take5 Survey for trip number " + tripJobsiteModel.TripId + "at" + model.SurveyStepOneAnswersAPIModel.CreatedDate.ToString("yyy-MM-dd, HH:mm:ss");
+                                                                int notificationTypeId = (int)CommanData.NotificationTypes.DestinationArrived;
+                                                                string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " arrived his destination trip number " + tripJobsiteModel.TripId + "at" + model.TripDestinationArrivedModel.DestinationArrivedDate.ToString("yyy-MM-dd, HH:mm:ss");
                                                                 message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
-                                                                //await _tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "SurveyStepOneCompleted");
+                                                                //_tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "DestinationArrived");
                                                             }
                                                         }
                                                         else
                                                         {
-                                                            message = "Failed Process, Can not add Stage one of survey";
+                                                            result = false;
+                                                            invalidObject = true;
                                                         }
-
-                                                        //if (result == true)
-                                                        //{
-                                                        //    result = _surveyService.AddAnswersToStepNQuestions(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId).Result;
-                                                        //    if(result == false)
-                                                        //    {
-                                                        //        // set trip to previous status
-                                                        //         await _tripJobsiteService.UpdateTripJobsiteStatus(model.TripId, model.JobsiteId, "DestinationArrived");
-                                                        //         await _tripJobsiteService.UpdateTripJobsiteTake5Status(model.TripId, model.JobsiteId, "NotStarted");
-
-                                                        //    }
-                                                        //}
-                                                        //else
-                                                        //{ 
-                                                        //if (result != true)
-                                                        //{
-                                                        //    message = "Failed Process, Can not add Stage one of survey";
-                                                        //}
-                                                        //}
                                                     }
-                                                    else
+                                                    else if (LastTripStatus == "DestinationArrived")
                                                     {
-                                                        result = false;
-                                                        invalidObject = true;
-                                                    }
-                                                }
-                                                else if (LastTripStatus == "SurveyStepOneCompleted")
-                                                {
-                                                    if (model.EndStatus == "StepTwoRequested")
-                                                    {
-                                                        if (model.Take5StepTwoRequestAPIModel != null)
+                                                        if (model.SurveyStepOneAnswersAPIModel != null)
                                                         {
-                                                            tripJobsiteModel = _tripService.CreateStepTwoRequest(model.Take5StepTwoRequestAPIModel, model.TripId, model.JobsiteId);
-                                                            if (tripJobsiteModel != null)
+                                                            result = _surveyService.AddAnswersToStepNQuestions(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId, (int)CommanData.SurveySteps.StepOne).Result;
+                                                            if (result == true)
                                                             {
-                                                                result = true;
-                                                                double TimeDifferenceBtweenStepOneAndTwoRequest = _tripJobsiteWarningService.CalculateDifference((DateTime)tripJobsiteModel.StageTwoRequestDate, (DateTime)tripJobsiteModel.StageOneComplatedTime);
-                                                                if (TimeDifferenceBtweenStepOneAndTwoRequest != 0)
+                                                                if (model.SurveyStepOneAnswersAPIModel.DangerAPIs.Count > 0)
                                                                 {
-                                                                    _tripJobsiteWarningService.AddNewTripJobsiteWarning(model.TripId, model.JobsiteId, (int)CommanData.WarningTypes.StepTwoRequestWarning, TimeDifferenceBtweenStepOneAndTwoRequest);
+                                                                    result = _surveyService.AddDangersToSurveyStepOne(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId).Result;
                                                                 }
-                                                                int notificationTypeId = (int)CommanData.NotificationTypes.StepTwoRequest;
-                                                                double diff = ((DateTime)tripJobsiteModel.StageTwoRequestDate - (DateTime)tripJobsiteModel.StageOneComplatedTime).TotalMinutes;
-                                                                string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " Requested to complete step two for survey with trip number " + tripJobsiteModel.TripId + ". survey step one has completed for " +
-                                                                    diff + " minutes ago at " + tripJobsiteModel.StageOneComplatedTime.Value.ToString("yyy-MM-dd") + ", " + tripJobsiteModel.StageOneComplatedTime.Value.ToString("HH:mm:ss");
-                                                                message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
-                                                                //await _tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "StepTwoRequested");
+                                                                result = await _tripJobsiteService.UpdateStepOneCompletion(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId);
+                                                                if (result != true)
+                                                                {
+                                                                    result = _surveyService.DeleteTake5StepOneForTripJobsite(model.TripId, model.JobsiteId);
+                                                                    message = "Failed Process, Can not add Stage one of survey";
+                                                                }
+                                                                else
+                                                                {
+                                                                    int notificationTypeId = (int)CommanData.NotificationTypes.StepOneCompleted;
+                                                                    string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " completed step one of Take5 Survey for trip number " + tripJobsiteModel.TripId + "at" + model.SurveyStepOneAnswersAPIModel.CreatedDate.ToString("yyy-MM-dd, HH:mm:ss");
+                                                                    message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
+                                                                    //await _tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "SurveyStepOneCompleted");
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                message = "Failed Process, Can not add Stage one of survey";
+                                                            }
+
+                                                            //if (result == true)
+                                                            //{
+                                                            //    result = _surveyService.AddAnswersToStepNQuestions(model.SurveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId).Result;
+                                                            //    if(result == false)
+                                                            //    {
+                                                            //        // set trip to previous status
+                                                            //         await _tripJobsiteService.UpdateTripJobsiteStatus(model.TripId, model.JobsiteId, "DestinationArrived");
+                                                            //         await _tripJobsiteService.UpdateTripJobsiteTake5Status(model.TripId, model.JobsiteId, "NotStarted");
+
+                                                            //    }
+                                                            //}
+                                                            //else
+                                                            //{ 
+                                                            //if (result != true)
+                                                            //{
+                                                            //    message = "Failed Process, Can not add Stage one of survey";
+                                                            //}
+                                                            //}
+                                                        }
+                                                        else
+                                                        {
+                                                            result = false;
+                                                            invalidObject = true;
+                                                        }
+                                                    }
+                                                    else if (LastTripStatus == "SurveyStepOneCompleted")
+                                                    {
+                                                        if (model.EndStatus == "StepTwoRequested")
+                                                        {
+                                                            if (model.Take5StepTwoRequestAPIModel != null)
+                                                            {
+                                                                tripJobsiteModel = _tripService.CreateStepTwoRequest(model.Take5StepTwoRequestAPIModel, model.TripId, model.JobsiteId);
+                                                                if (tripJobsiteModel != null)
+                                                                {
+                                                                    result = true;
+                                                                    double TimeDifferenceBtweenStepOneAndTwoRequest = _tripJobsiteWarningService.CalculateDifference((DateTime)tripJobsiteModel.StageTwoRequestDate, (DateTime)tripJobsiteModel.StageOneComplatedTime);
+                                                                    if (TimeDifferenceBtweenStepOneAndTwoRequest != 0)
+                                                                    {
+                                                                        _tripJobsiteWarningService.AddNewTripJobsiteWarning(model.TripId, model.JobsiteId, (int)CommanData.WarningTypes.StepTwoRequestWarning, TimeDifferenceBtweenStepOneAndTwoRequest);
+                                                                    }
+                                                                    int notificationTypeId = (int)CommanData.NotificationTypes.StepTwoRequest;
+                                                                    double diff = ((DateTime)tripJobsiteModel.StageTwoRequestDate - (DateTime)tripJobsiteModel.StageOneComplatedTime).TotalMinutes;
+                                                                    string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " Requested to complete step two for survey with trip number " + tripJobsiteModel.TripId + ". survey step one has completed for " +
+                                                                        diff + " minutes ago at " + tripJobsiteModel.StageOneComplatedTime.Value.ToString("yyy-MM-dd") + ", " + tripJobsiteModel.StageOneComplatedTime.Value.ToString("HH:mm:ss");
+                                                                    message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
+                                                                    //await _tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "StepTwoRequested");
+                                                                }
+                                                                else
+                                                                {
+                                                                    result = false;
+                                                                    message = "Failed Process, Can not add request for stage 2";
+                                                                }
                                                             }
                                                             else
                                                             {
                                                                 result = false;
-                                                                message = "Failed Process, Can not add request for stage 2";
+                                                                invalidObject = true;
                                                             }
                                                         }
                                                         else
                                                         {
-                                                            result = false;
-                                                            invalidObject = true;
+                                                            if (model.Take5StepTwoRequestAPIModel != null)
+                                                            {
+                                                                result = _tripJobsiteService.AddStepTwoRequestForOfflineTrip(model.Take5StepTwoRequestAPIModel, model.TripId, model.JobsiteId);
+                                                                if (result != true)
+                                                                {
+                                                                    message = "Failed Process, Can not request for stage 2";
+                                                                }
+                                                                else
+                                                                {
+                                                                    double TimeDifferenceBtweenStepOneAndTwoRequest = _tripJobsiteWarningService.CalculateDifference((DateTime)tripJobsiteModel.StageTwoRequestDate, (DateTime)tripJobsiteModel.StageOneComplatedTime);
+                                                                    if (TimeDifferenceBtweenStepOneAndTwoRequest != 0)
+                                                                    {
+                                                                        _tripJobsiteWarningService.AddNewTripJobsiteWarning(model.TripId, model.JobsiteId, (int)CommanData.WarningTypes.StepTwoRequestWarning, TimeDifferenceBtweenStepOneAndTwoRequest);
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                result = false;
+                                                                invalidObject = true;
+                                                            }
                                                         }
                                                     }
-                                                    else
+                                                    else if (LastTripStatus == "StepTwoRequested")
                                                     {
                                                         if (model.Take5StepTwoRequestAPIModel != null)
                                                         {
-                                                            result = _tripJobsiteService.AddStepTwoRequestForOfflineTrip(model.Take5StepTwoRequestAPIModel, model.TripId, model.JobsiteId);
-                                                            if (result != true)
+                                                            if (model.Take5StepTwoRequestAPIModel.ResponseDate != null)
                                                             {
-                                                                message = "Failed Process, Can not request for stage 2";
+                                                                result = _tripJobsiteService.AddOfflineResponseforStepTwoRequestForTrip(model.Take5StepTwoRequestAPIModel, model.TripId, model.JobsiteId);
+                                                                if (result != true)
+                                                                {
+                                                                    message = "Failed Process, error in step two request";
+                                                                }
                                                             }
                                                             else
                                                             {
-                                                                double TimeDifferenceBtweenStepOneAndTwoRequest = _tripJobsiteWarningService.CalculateDifference((DateTime)tripJobsiteModel.StageTwoRequestDate, (DateTime)tripJobsiteModel.StageOneComplatedTime);
-                                                                if (TimeDifferenceBtweenStepOneAndTwoRequest != 0)
+                                                                result = false;
+                                                                message = "Failed Process, request not approved yet";
+                                                            }
+
+                                                        }
+                                                        else
+                                                        {
+                                                            result = false;
+                                                            invalidObject = true;
+                                                        }
+                                                    }
+
+                                                    else if (LastTripStatus == "StepTwoResponsed")
+                                                    {
+                                                        if (model.SurveyStepTwoAnswersAPIModel != null)
+                                                        {
+                                                            SurveyStepOneAnswersAPIModel surveyStepOneAnswersAPIModel = _mapper.Map<SurveyStepOneAnswersAPIModel>(model.SurveyStepTwoAnswersAPIModel);
+                                                            result = await _surveyService.AddAnswersToStepNQuestions(surveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId, (int)CommanData.SurveySteps.StepTwo);
+                                                            if (result == true)
+                                                            {
+                                                                result = _tripJobsiteService.UpdateStepTwoCompletion(surveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId).Result;
+                                                                if (result != true)
                                                                 {
-                                                                    _tripJobsiteWarningService.AddNewTripJobsiteWarning(model.TripId, model.JobsiteId, (int)CommanData.WarningTypes.StepTwoRequestWarning, TimeDifferenceBtweenStepOneAndTwoRequest);
+                                                                    result = _surveyService.DeleteTake5StepTwoForTripJobsite(model.TripId, model.JobsiteId);
+                                                                    message = "Failed Process, Can not add Stage two of survey";
                                                                 }
+                                                                else
+                                                                {
+                                                                    TripJobsiteModel tripJobsiteModel1 = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteId(model.TripId, model.JobsiteId);
+                                                                    double TimeDifferenceBtweenStepOneAndTwoRequest = _tripJobsiteWarningService.CalculateDifference((DateTime)model.SurveyStepTwoAnswersAPIModel.CreatedDate, (DateTime)tripJobsiteModel1.StageOneComplatedTime);
+                                                                    if (TimeDifferenceBtweenStepOneAndTwoRequest != 0)
+                                                                    {
+                                                                        _tripJobsiteWarningService.AddNewTripJobsiteWarning(model.TripId, model.JobsiteId, (int)CommanData.WarningTypes.StepTwoRequestWarning, TimeDifferenceBtweenStepOneAndTwoRequest);
+                                                                    }
+                                                                    int notificationTypeId = (int)CommanData.NotificationTypes.StepTwoCompleted;
+                                                                    double diff = ((DateTime)model.SurveyStepTwoAnswersAPIModel.CreatedDate - (DateTime)tripJobsiteModel1.StageOneComplatedTime).TotalMinutes;
+
+                                                                    string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " completed Step two of Take5 Survey for trip number " + tripJobsiteModel.TripId + "at" +
+                                                                     model.SurveyStepTwoAnswersAPIModel.CreatedDate.ToString("yyy-MM-dd, HH:mm:ss") + " after " + diff + " minutes from step one completion";
+                                                                    message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
+                                                                    //await _tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "SurveyStepTwoCompleted");
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                message = "Failed Process, Can not add Stage two of survey";
                                                             }
                                                         }
                                                         else
@@ -822,173 +901,110 @@ namespace Take5.APIController
                                                             invalidObject = true;
                                                         }
                                                     }
-                                                }
-                                                else if (LastTripStatus == "StepTwoRequested")
-                                                {
-                                                    if (model.Take5StepTwoRequestAPIModel != null)
+                                                    else if (LastTripStatus == "SurveyStepTwoCompleted")
                                                     {
-                                                        if (model.Take5StepTwoRequestAPIModel.ResponseDate != null)
+                                                        if (model.Take5TogetherAPIModels != null)
                                                         {
-                                                            result = _tripJobsiteService.AddOfflineResponseforStepTwoRequestForTrip(model.Take5StepTwoRequestAPIModel, model.TripId, model.JobsiteId);
-                                                            if (result != true)
-                                                            {
-                                                                message = "Failed Process, error in step two request";
-                                                            }
+                                                            result = _tripTake5TogetherService.AddTripTake5TogetherForTrip(model);
                                                         }
                                                         else
                                                         {
-                                                            result = false;
-                                                            message = "Failed Process, request not approved yet";
+                                                            result = true;
                                                         }
-
-                                                    }
-                                                    else
-                                                    {
-                                                        result = false;
-                                                        invalidObject = true;
-                                                    }
-                                                }
-
-                                                else if (LastTripStatus == "StepTwoResponsed")
-                                                {
-                                                    if (model.SurveyStepTwoAnswersAPIModel != null)
-                                                    {
-                                                        SurveyStepOneAnswersAPIModel surveyStepOneAnswersAPIModel = _mapper.Map<SurveyStepOneAnswersAPIModel>(model.SurveyStepTwoAnswersAPIModel);
-                                                        result = await _surveyService.AddAnswersToStepNQuestions(surveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId, (int)CommanData.SurveySteps.StepTwo);
                                                         if (result == true)
                                                         {
-                                                            result = _tripJobsiteService.UpdateStepTwoCompletion(surveyStepOneAnswersAPIModel, model.TripId, model.JobsiteId).Result;
+                                                            result = _tripJobsiteService.UpdateTripJobsiteStatus(model.TripId, model.JobsiteId, "TripCompleted").Result;
                                                             if (result != true)
                                                             {
-                                                                result = _surveyService.DeleteTake5StepTwoForTripJobsite(model.TripId, model.JobsiteId);
-                                                                message = "Failed Process, Can not add Stage two of survey";
+                                                                message = "Failed Process, Can not complete trip";
                                                             }
                                                             else
                                                             {
-                                                                TripJobsiteModel tripJobsiteModel1 = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteId(model.TripId, model.JobsiteId);
-                                                                double TimeDifferenceBtweenStepOneAndTwoRequest = _tripJobsiteWarningService.CalculateDifference((DateTime)model.SurveyStepTwoAnswersAPIModel.CreatedDate, (DateTime)tripJobsiteModel1.StageOneComplatedTime);
-                                                                if (TimeDifferenceBtweenStepOneAndTwoRequest != 0)
-                                                                {
-                                                                    _tripJobsiteWarningService.AddNewTripJobsiteWarning(model.TripId, model.JobsiteId, (int)CommanData.WarningTypes.StepTwoRequestWarning, TimeDifferenceBtweenStepOneAndTwoRequest);
-                                                                }
-                                                                int notificationTypeId = (int)CommanData.NotificationTypes.StepTwoCompleted;
-                                                                double diff = ((DateTime)model.SurveyStepTwoAnswersAPIModel.CreatedDate - (DateTime)tripJobsiteModel1.StageOneComplatedTime).TotalMinutes;
-
-                                                                string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " completed Step two of Take5 Survey for trip number " + tripJobsiteModel.TripId + "at" +
-                                                                 model.SurveyStepTwoAnswersAPIModel.CreatedDate.ToString("yyy-MM-dd, HH:mm:ss") + " after " + diff + " minutes from step one completion";
+                                                                int notificationTypeId = (int)CommanData.NotificationTypes.TripCompleted;
+                                                                string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " completed trip number " + tripJobsiteModel.TripId;
                                                                 message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
-                                                                //await _tripJobsiteService.UpdateDashboard(tripJobsiteModel.TripId, tripJobsiteModel.JobSiteId, "Supervisor", "SurveyStepTwoCompleted");
                                                             }
                                                         }
                                                         else
                                                         {
-                                                            message = "Failed Process, Can not add Stage two of survey";
+                                                            message = "Failed Process, Can not add Take5 Together data";
                                                         }
                                                     }
                                                     else
                                                     {
                                                         result = false;
-                                                        invalidObject = true;
-                                                    }
-                                                }
-                                                else if (LastTripStatus == "SurveyStepTwoCompleted")
-                                                {
-                                                    if (model.Take5TogetherAPIModels != null)
-                                                    {
-                                                        result = _tripTake5TogetherService.AddTripTake5TogetherForTrip(model);
-                                                    }
-                                                    else
-                                                    {
-                                                        result = true;
+                                                        message = "invalid Data";
                                                     }
                                                     if (result == true)
                                                     {
-                                                        result = _tripJobsiteService.UpdateTripJobsiteStatus(model.TripId, model.JobsiteId, "TripCompleted").Result;
-                                                        if (result != true)
-                                                        {
-                                                            message = "Failed Process, Can not complete trip";
-                                                        }
-                                                        else
-                                                        {
-                                                            int notificationTypeId = (int)CommanData.NotificationTypes.TripCompleted;
-                                                            string notificationMessage = tripJobsiteModel.Trip.Driver.FullName + " completed trip number " + tripJobsiteModel.TripId;
-                                                            message = _notificationService.HandleNotificationToRole(notificationMessage, notificationTypeId, "Supervisor", model.TripId, model.JobsiteId).Result;
-                                                        }
+                                                        tripJobsiteModel = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteId(model.TripId, model.JobsiteId);
+                                                        LastTripStatus = Enum.GetName(typeof(CommanData.TripStatus), tripJobsiteModel.TripStatus);
+                                                        LastTripStatusNum = tripJobsiteModel.TripStatus;
                                                     }
                                                     else
                                                     {
-                                                        message = "Failed Process, Can not add Take5 Together data";
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    result = false;
-                                                    message = "invalid Data";
-                                                }
-                                                if (result == true)
-                                                {
-                                                    tripJobsiteModel = _tripJobsiteService.GetTripJobsiteModelByTripNumberAndJobsiteId(model.TripId, model.JobsiteId);
-                                                    LastTripStatus = Enum.GetName(typeof(CommanData.TripStatus), tripJobsiteModel.TripStatus);
-                                                    LastTripStatusNum = tripJobsiteModel.TripStatus;
-                                                }
-                                                else
-                                                {
-                                                    result = false;
-                                                    if (invalidObject == true)
-                                                    {
-                                                        message = "Failed Process; Invalid data, empty object";
+                                                        result = false;
+                                                        if (invalidObject == true)
+                                                        {
+                                                            message = "Failed Process; Invalid data, empty object";
+                                                        }
                                                     }
                                                 }
                                             }
+                                            else
+                                            {
+                                                message = "Trip at " + LastTripStatus + " Status";
+                                                result = true;
+                                            }
+
+                                            // loop End
                                         }
                                         else
                                         {
-                                            message = "Trip at "+ LastTripStatus +" Status";
                                             result = true;
+                                            response = "Converted";
+                                            message = "Failed Process, trip already converted";
                                         }
-                                        
-                                        // loop End
                                     }
                                     else
                                     {
                                         result = true;
-                                        response = "Converted";
-                                        message = "Failed Process, trip already converted";
+                                        response = "Cancelled";
+                                        message = "Failed Process, trip already cancelled";
                                     }
                                 }
                                 else
-                                { 
+                                {
                                     result = true;
                                     response = "Cancelled";
-                                    message = "Failed Process, trip already cancelled";
+                                    message = "Failed Process, trip already Cancelled";
                                 }
                             }
                             else
                             {
-                                result = true;
-                                response = "Cancelled";
-                                message = "Failed Process, trip already Cancelled";
+                                result = false;
+                                message = "invalid trip type";
                             }
                         }
                         else
                         {
-                            result = false;
-                            message = "invalid trip type";
+                            result = true;
+                            response = "Cancelled";
+                            message = "invalid trip data";
                         }
                     }
                     else
                     {
-                        result = true;
-                        response = "Cancelled";
-                        message = "invalid trip data";
+                        result = false;
+                        message = "invalid user data";
                     }
                 }
                 else
                 {
                     result = false;
-                    message = "invalid user data";
+                    message = "invalid truck number";
                 }
-                if(result == true)
+                if (result == true)
                 {
                     return Ok(new { Message = "SuccessFul Process", Data = response });
                 }
@@ -1002,6 +1018,7 @@ namespace Take5.APIController
             {
                 return BadRequest(new { Message = message, Data = false });
             }
+                     
         }
 
         [HttpPost("IsTripCancelled")]

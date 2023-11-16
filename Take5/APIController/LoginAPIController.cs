@@ -43,7 +43,7 @@ namespace Take5.APIController
         }
 
         [HttpPost("userLogin")]
-        public async Task<ActionResult> UserLogin(LoginModel loginModel)
+        public async Task<ActionResult> UserLogin([Bind(include: "DriverNumber, Password")] LoginModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.DriverNumber);
             if (driver != null)
